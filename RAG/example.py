@@ -24,12 +24,12 @@ def main():
     
     # 初始化 RAG 系统
     # 如果使用 Ollama，需要设置相应的模型名称，例如：
-    # embedding_model="nomic-embed-text"  # Ollama 嵌入模型
-    # llm_model="llama2"  # Ollama LLM 模型
+    # embedding_model="qwen3-embedding:0.6b"  # Ollama 嵌入模型
+    # llm_model="qwen3:0.6b"  # Ollama LLM 模型
     rag = IntelligentRAG(
         documents_path="./documents",  # 文档目录路径
-        embedding_model="text-embedding-3-small",  # 如果使用 Ollama，改为 "nomic-embed-text"
-        llm_model="gpt-3.5-turbo",  # 如果使用 Ollama，改为 "llama2" 或其他模型
+        embedding_model="qwen3-embedding:0.6b",  # 默认使用 Qwen3 嵌入模型
+        llm_model="qwen3:0.6b",  # 默认使用 Qwen3 LLM 模型
         chunk_size=1000,
         chunk_overlap=200,
     )

@@ -14,18 +14,21 @@ def main():
     
     # 初始化 RAG 系统（使用 Ollama 模型）
     # 注意：需要先使用 ollama pull 下载相应的模型
-    # 例如：ollama pull llama2
-    #      ollama pull nomic-embed-text
+    # 例如：ollama pull qwen3:0.6b
+    #      ollama pull qwen3-embedding:0.6b
     rag = IntelligentRAG(
         documents_path="./documents",  # 文档目录路径
-        embedding_model="nomic-embed-text",  # Ollama 嵌入模型
-        llm_model="llama2",  # Ollama LLM 模型，可以改为 llama3, mistral, qwen 等
+        embedding_model="qwen3-embedding:0.6b",  # Ollama 嵌入模型
+        llm_model="qwen3:0.6b",  # Ollama LLM 模型
         chunk_size=1000,
         chunk_overlap=200,
     )
     
     # 构建 RAG 系统
-    rag.build(k=4)  # k 表示检索的文档块数量
+    # k: 初始检索的文档块数量（重排序前）
+    # use_rerank: 是否启用重排序（需要设置 COHERE_API_KEY）
+    # rerank_top_n: 重排序后保留的文档数量
+    rag.build(k=4, use_rerank=True, rerank_top_n=3)
     
     # 可选：保存向量存储以便后续使用
     # rag.save_vectorstore("./vectorstore")

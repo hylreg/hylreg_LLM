@@ -33,8 +33,8 @@ pip install -e .
 
 # 启动 Ollama 服务（通常会自动启动）
 # 下载需要的模型，例如：
-ollama pull llama2
-ollama pull nomic-embed-text
+ollama pull qwen3:0.6b
+ollama pull qwen3-embedding:0.6b
 ```
 
 设置环境变量：
@@ -52,8 +52,9 @@ OLLAMA_BASE_URL=http://localhost:11434
 ```
 
 **使用 Ollama 时的模型配置**：
-- 嵌入模型推荐：`nomic-embed-text`、`all-minilm`
-- LLM 模型推荐：`llama2`、`llama3`、`mistral`、`qwen` 等
+- 默认嵌入模型：`qwen3-embedding:0.6b`
+- 默认 LLM 模型：`qwen3:0.6b`
+- 其他推荐模型：`nomic-embed-text`、`llama2`、`llama3`、`mistral` 等
 
 ### 方式2: 使用硅基流动 API
 
@@ -125,8 +126,8 @@ from rag_system import IntelligentRAG
 # 初始化 RAG 系统（使用 Ollama）
 rag = IntelligentRAG(
     documents_path="./documents",
-    embedding_model="nomic-embed-text",  # Ollama 嵌入模型
-    llm_model="llama2",  # Ollama LLM 模型
+    embedding_model="qwen3-embedding:0.6b",  # Ollama 嵌入模型
+    llm_model="qwen3:0.6b",  # Ollama LLM 模型
 )
 
 # 构建系统（启用重排序）
@@ -141,11 +142,12 @@ print(result["answer"])
 ```python
 from rag_system import IntelligentRAG
 
-# 初始化 RAG 系统
+# 初始化 RAG 系统（默认使用 Qwen3 模型）
+# 如果使用硅基流动或 OpenAI，需要设置相应的环境变量
 rag = IntelligentRAG(
     documents_path="./documents",
-    embedding_model="text-embedding-3-small",
-    llm_model="gpt-3.5-turbo",
+    embedding_model="qwen3-embedding:0.6b",  # 默认使用 Qwen3 嵌入模型
+    llm_model="qwen3:0.6b",  # 默认使用 Qwen3 LLM 模型
 )
 
 # 构建系统（启用重排序）

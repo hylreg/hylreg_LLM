@@ -104,17 +104,82 @@ COHERE_API_KEY=your-cohere-api-key
 - 优先级顺序为：Ollama > 硅基流动 > OpenAI
 - 重排序功能需要设置 `COHERE_API_KEY`，并在 `build()` 方法中设置 `use_rerank=True`
 
+## 快速开始
+
+### 完整运行流程
+
+```bash
+# 1. 进入项目目录
+cd /home/lab/Projects/hylreg_LLM
+
+# 2. 安装依赖
+uv sync
+# 或使用 pip
+pip install -e .
+
+# 3. 设置环境变量（选择一种方式）
+
+# 方式1: 使用 Ollama（推荐）
+export USE_OLLAMA="true"
+ollama pull qwen3:0.6b
+ollama pull qwen3-embedding:0.6b
+
+# 方式2: 使用硅基流动 API
+export SILICONFLOW_API_KEY="your-siliconflow-api-key"
+export SILICONFLOW_BASE_URL="https://api.siliconflow.cn/v1/"
+
+# 方式3: 使用 OpenAI API
+export OPENAI_API_KEY="your-openai-api-key"
+
+# 4. 可选：启用重排序
+export COHERE_API_KEY="your-cohere-api-key"
+
+# 5. 准备文档（将文档放在 RAG/documents/ 目录下）
+# 示例文档已包含在 RAG/documents/sample.txt
+
+# 6. 运行示例
+cd RAG
+python example.py
+
+# 或使用 Ollama 专用示例
+python example_ollama.py
+```
+
 ## 使用方法
 
 ### 1. 准备文档
 
 将你的文档放在 `documents/` 目录下（支持 `.txt` 文件）。
 
+```bash
+# 确保文档目录存在
+mkdir -p RAG/documents
+
+# 添加你的文档
+cp your_document.txt RAG/documents/
+```
+
 ### 2. 运行示例
 
+**基础示例**（使用默认配置）：
 ```bash
 cd RAG
 python example.py
+```
+
+**Ollama 示例**（使用本地 Ollama 模型）：
+```bash
+cd RAG
+# 确保已设置 USE_OLLAMA=true
+export USE_OLLAMA="true"
+python example_ollama.py
+```
+
+**使用 Python 模块方式运行**：
+```bash
+# 从项目根目录运行
+python -m RAG.example
+python -m RAG.example_ollama
 ```
 
 ### 3. 在代码中使用
@@ -158,12 +223,118 @@ result = rag.query("你的问题")
 print(result["answer"])
 ```
 
+## 常用运行命令
+
+### 检查环境配置
+
+```bash
+# 检查 Ollama 是否运行
+curl http://localhost:11434/api/tags
+
+# 检查已下载的 Ollama 模型
+ollama list
+
+# 检查环境变量
+echo $USE_OLLAMA
+echo $SILICONFLOW_API_KEY
+echo $COHERE_API_KEY
+```
+
+### 测试不同配置
+
+```bash
+# 测试 Ollama 配置
+export USE_OLLAMA="true"
+cd RAG && python example_ollama.py
+
+# 测试硅基流动配置
+unset USE_OLLAMA
+export SILICONFLOW_API_KEY="your-key"
+export SILICONFLOW_BASE_URL="https://api.siliconflow.cn/v1/"
+cd RAG && python example.py
+
+# 测试 OpenAI 配置
+unset USE_OLLAMA
+unset SILICONFLOW_API_KEY
+export OPENAI_API_KEY="your-key"
+cd RAG && python example.py
+```
+
+### 调试模式
+
+```bash
+# 使用 Python 交互式调试
+cd RAG
+python -i example.py
+
+# 或在代码中添加调试信息
+# 系统会自动打印使用的 API 和模型信息
+```
+
 ## 文件说明
 
 - `rag_system.py`: RAG 系统核心实现
-- `example.py`: 使用示例
+- `example.py`: 使用示例（默认配置）
+- `example_ollama.py`: Ollama 专用示例
 - `documents/`: 文档目录
 - `README.md`: 本文件
+
+## 故障排查
+
+### 常见问题
+
+**1. Ollama 连接失败**
+```bash
+# 检查 Ollama 服务是否运行
+curl http://localhost:11434/api/tags
+
+# 如果失败，启动 Ollama 服务
+ollama serve
+
+# 检查环境变量
+echo $USE_OLLAMA
+echo $OLLAMA_BASE_URL
+```
+
+**2. 模型未找到**
+```bash
+# 检查已下载的模型
+ollama list
+
+# 下载缺失的模型
+ollama pull qwen3:0.6b
+ollama pull qwen3-embedding:0.6b
+```
+
+**3. API Key 错误**
+```bash
+# 检查环境变量是否正确设置
+env | grep -E "(SILICONFLOW|OPENAI|COHERE|OLLAMA)"
+
+# 验证 API Key 是否有效（以 Cohere 为例）
+curl -X POST https://api.cohere.ai/v1/rerank \
+  -H "Authorization: Bearer $COHERE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"rerank-multilingual-v3.0","query":"test","documents":["test"]}'
+```
+
+**4. 依赖安装问题**
+```bash
+# 重新安装依赖
+pip install --upgrade -e .
+
+# 或使用 uv
+uv sync --upgrade
+```
+
+**5. 文档加载失败**
+```bash
+# 检查文档目录是否存在
+ls -la RAG/documents/
+
+# 检查文档编码（确保是 UTF-8）
+file RAG/documents/*.txt
+```
 
 ## 注意事项
 
@@ -174,6 +345,7 @@ print(result["answer"])
 - 可以保存向量存储以便后续快速加载
 - 系统会自动检测环境变量，优先级：Ollama > 硅基流动 > OpenAI
 - 使用 Ollama 时，确保模型已下载（使用 `ollama pull <model_name>`）
+- 如果遇到问题，查看控制台输出的错误信息，系统会显示使用的 API 和模型信息
 
 ## 重排序功能说明
 

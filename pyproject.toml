@@ -15,4 +15,6 @@ dependencies = [
     "tiktoken>=0.5.0",
     "python-dotenv>=1.0.0",
     "cohere>=4.0.0",
+    "FlagEmbedding>=1.2.0",
+    "torch>=2.0.0",
 ]

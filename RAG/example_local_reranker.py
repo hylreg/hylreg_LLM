@@ -1,5 +1,5 @@
 """
-使用 Ollama 的 RAG 系统示例
+使用本地 Qwen Reranker 的 RAG 系统示例
 """
 
 import os
@@ -12,23 +12,26 @@ def main():
     # 如果 Ollama 运行在其他地址，可以设置：
     # os.environ["OLLAMA_BASE_URL"] = "http://localhost:11434"
     
-    # 初始化 RAG 系统（使用 Ollama 模型）
-    # 注意：需要先使用 ollama pull 下载相应的模型
-    # 例如：ollama pull qwen3:0.6b
-    #      ollama pull qwen3-embedding:0.6b
-    #      ollama pull dengcao/Qwen3-Reranker-0.6B:Q8_0
+    # 初始化 RAG 系统（使用 Ollama 模型 + 本地 Reranker）
+    # 注意：
+    # 1. 需要先使用 ollama pull 下载相应的模型
+    #    ollama pull qwen3:0.6b
+    #    ollama pull qwen3-embedding:0.6b
+    # 2. 需要先下载 Qwen Reranker 模型到本地
+    #    huggingface-cli download --resume-download Qwen/Qwen3-Reranker-0.6B --local-dir ./Qwen/Qwen3-Reranker-0.6B
+    
     rag = IntelligentRAG(
         documents_path="./documents",  # 文档目录路径
         embedding_model="qwen3-embedding:0.6b",  # Ollama 嵌入模型
         llm_model="qwen3:0.6b",  # Ollama LLM 模型
         chunk_size=1000,
         chunk_overlap=200,
-        ollama_reranker_model="dengcao/Qwen3-Reranker-0.6B:Q8_0",  # Ollama Reranker 模型
+        reranker_model_path="./Qwen/Qwen3-Reranker-0.6B",  # 本地 Reranker 模型路径
     )
     
     # 构建 RAG 系统
-    # k: 初始检索的文档块数量（重排序前）
-    # use_rerank: 是否启用重排序（使用 Ollama Reranker）
+    # k: 初始检索的文档块数量（重排序前会检索 k*2 个文档）
+    # use_rerank: 是否启用重排序（使用本地 Reranker）
     # rerank_top_n: 重排序后保留的文档数量
     rag.build(k=4, use_rerank=True, rerank_top_n=3)
     

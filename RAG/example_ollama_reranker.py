@@ -1,5 +1,5 @@
 """
-使用 Ollama 的 RAG 系统示例
+使用 Ollama Reranker 的 RAG 系统示例
 """
 
 import os
@@ -12,11 +12,14 @@ def main():
     # 如果 Ollama 运行在其他地址，可以设置：
     # os.environ["OLLAMA_BASE_URL"] = "http://localhost:11434"
     
-    # 初始化 RAG 系统（使用 Ollama 模型）
-    # 注意：需要先使用 ollama pull 下载相应的模型
-    # 例如：ollama pull qwen3:0.6b
-    #      ollama pull qwen3-embedding:0.6b
-    #      ollama pull dengcao/Qwen3-Reranker-0.6B:Q8_0
+    # 初始化 RAG 系统（使用 Ollama 模型 + Ollama Reranker）
+    # 注意：
+    # 1. 需要先使用 ollama pull 下载相应的模型
+    #    ollama pull qwen3:0.6b
+    #    ollama pull qwen3-embedding:0.6b
+    #    ollama pull dengcao/Qwen3-Reranker-0.6B:Q8_0
+    # 2. 确保 Ollama 服务正在运行
+    
     rag = IntelligentRAG(
         documents_path="./documents",  # 文档目录路径
         embedding_model="qwen3-embedding:0.6b",  # Ollama 嵌入模型
@@ -27,7 +30,7 @@ def main():
     )
     
     # 构建 RAG 系统
-    # k: 初始检索的文档块数量（重排序前）
+    # k: 初始检索的文档块数量（重排序前会检索 k*2 个文档）
     # use_rerank: 是否启用重排序（使用 Ollama Reranker）
     # rerank_top_n: 重排序后保留的文档数量
     rag.build(k=4, use_rerank=True, rerank_top_n=3)

@@ -19,24 +19,30 @@ def main():
     # 方式3: 使用 OpenAI API
     # os.environ["OPENAI_API_KEY"] = "your-openai-api-key"
     
-    # 方式4: 启用重排序（需要 Cohere API Key）
+    # 方式4: 启用重排序
+    # 如果使用 Ollama，会自动使用 Ollama Reranker（无需 API Key）
+    # 如果不使用 Ollama，需要设置 Cohere API Key：
     # os.environ["COHERE_API_KEY"] = "your-cohere-api-key"
     
     # 初始化 RAG 系统
     # 如果使用 Ollama，需要设置相应的模型名称，例如：
     # embedding_model="qwen3-embedding:0.6b"  # Ollama 嵌入模型
     # llm_model="qwen3:0.6b"  # Ollama LLM 模型
+    # 如果使用 Ollama，设置环境变量
+    use_ollama = os.getenv("USE_OLLAMA", "false").lower() == "true"
+    
     rag = IntelligentRAG(
         documents_path="./documents",  # 文档目录路径
         embedding_model="qwen3-embedding:0.6b",  # 默认使用 Qwen3 嵌入模型
         llm_model="qwen3:0.6b",  # 默认使用 Qwen3 LLM 模型
         chunk_size=1000,
         chunk_overlap=200,
+        ollama_reranker_model="dengcao/Qwen3-Reranker-0.6B:Q8_0" if use_ollama else None,  # 如果使用 Ollama，则使用 Ollama Reranker
     )
     
     # 构建 RAG 系统
     # k: 初始检索的文档块数量（重排序前会检索 k*2 个文档）
-    # use_rerank: 是否启用重排序（需要设置 COHERE_API_KEY）
+    # use_rerank: 是否启用重排序（如果使用 Ollama，则使用 Ollama Reranker；否则使用 Cohere API）
     # rerank_top_n: 重排序后保留的文档数量
     rag.build(k=4, use_rerank=True, rerank_top_n=3)
     

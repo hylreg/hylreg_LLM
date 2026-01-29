@@ -58,10 +58,16 @@ def main():
     # k: 初始检索的文档块数量（重排序前会检索 k*2 个文档）
     # use_rerank: 是否启用重排序（如果使用 Ollama，则使用 Ollama Reranker；否则使用 Cohere API）
     # rerank_top_n: 重排序后保留的文档数量
-    rag.build(k=4, use_rerank=True, rerank_top_n=3)
-    
-    # 可选：保存向量存储以便后续使用
-    # rag.save_vectorstore("./vectorstore")
+    # vectorstore_path: 向量存储保存路径（如果路径存在会自动加载，避免重复处理文档）
+    # force_rebuild: 是否强制重新构建（默认 False，如果向量存储存在则直接加载）
+    vectorstore_path = script_dir / "vectorstore"
+    rag.build(
+        k=4, 
+        use_rerank=True, 
+        rerank_top_n=3,
+        vectorstore_path=str(vectorstore_path),  # 自动保存和加载向量存储
+        force_rebuild=False  # 设置为 True 可强制重新构建
+    )
     
     # 进行查询
     questions = [

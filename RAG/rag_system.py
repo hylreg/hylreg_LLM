@@ -742,15 +742,40 @@ class IntelligentRAG:
             self.qa_chain = CustomRAGChain(rag_chain, retriever)
         print("问答链已创建")
     
-    def build(self, k: int = 4, use_rerank: bool = True, rerank_top_n: int = 3):
+    def build(self, k: int = 4, use_rerank: bool = True, rerank_top_n: int = 3, vectorstore_path: Optional[str] = None, force_rebuild: bool = False):
         """
         构建完整的 RAG 系统
+        
+        如果提供了 vectorstore_path 且该路径存在，会自动加载已保存的向量存储，
+        避免重复处理文档。如果 force_rebuild=True，则强制重新构建。
         
         Args:
             k: 初始检索的文档块数量（重排序前）
             use_rerank: 是否使用重排序
             rerank_top_n: 重排序后保留的文档数量
+            vectorstore_path: 向量存储的保存路径（可选）。如果提供且路径存在，会加载已保存的向量存储
+            force_rebuild: 是否强制重新构建（即使存在已保存的向量存储）
         """
+        # 尝试加载已保存的向量存储
+        if vectorstore_path and not force_rebuild:
+            if os.path.exists(vectorstore_path) and os.path.isdir(vectorstore_path):
+                # 检查是否是有效的 FAISS 向量存储（至少包含 index.faiss 文件）
+                index_file = os.path.join(vectorstore_path, "index.faiss")
+                if os.path.exists(index_file):
+                    try:
+                        print(f"检测到已保存的向量存储: {vectorstore_path}")
+                        print("正在加载向量存储...")
+                        self.load_vectorstore(vectorstore_path)
+                        print("向量存储加载成功！")
+                        # 创建问答链
+                        self.create_qa_chain(k=k, use_rerank=use_rerank, rerank_top_n=rerank_top_n)
+                        print("RAG 系统构建完成！（使用已保存的向量存储）")
+                        return
+                    except Exception as e:
+                        print(f"加载向量存储失败: {e}")
+                        print("将重新构建向量存储...")
+        
+        # 重新构建向量存储
         print("开始构建 RAG 系统...")
         
         # 1. 加载文档
@@ -762,7 +787,14 @@ class IntelligentRAG:
         # 3. 创建向量存储
         self.create_vectorstore(splits)
         
-        # 4. 创建问答链
+        # 4. 如果提供了路径，自动保存向量存储
+        if vectorstore_path:
+            try:
+                self.save_vectorstore(vectorstore_path)
+            except Exception as e:
+                print(f"保存向量存储失败: {e}")
+        
+        # 5. 创建问答链
         self.create_qa_chain(k=k, use_rerank=use_rerank, rerank_top_n=rerank_top_n)
         
         print("RAG 系统构建完成！")

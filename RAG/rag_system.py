@@ -5,14 +5,20 @@
 
 import os
 from typing import List, Optional
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+# LangChain 1.0+ 使用 langchain_text_splitters
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader, DirectoryLoader
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_ollama import OllamaEmbeddings, ChatOllama
-from langchain.chains.retrieval_qa.base import RetrievalQA
-from langchain.prompts import PromptTemplate
-# 重排序相关导入
+# LangChain 1.2.7+ 中 RetrievalQA 已被移除，使用新的 API
+# 我们将使用 create_retrieval_chain 或自定义实现
+# LangChain 1.0+ 不再包含 langchain.chains，直接使用新 API
+RETRIEVAL_QA_AVAILABLE = False
+RetrievalQA = None
+# LangChain 1.0+ 中 PromptTemplate 在 langchain_core.prompts
+from langchain_core.prompts import PromptTemplate
+# 重排序相关导入 - LangChain 1.0+ 路径
 try:
     from langchain.retrievers import ContextualCompressionRetriever
     from langchain.retrievers.document_compressors import CohereRerank
@@ -23,9 +29,14 @@ except ImportError:
         from langchain.retrievers.document_compressors.cohere_rerank import CohereRerank
         COHERE_RERANK_AVAILABLE = True
     except ImportError:
-        ContextualCompressionRetriever = None
-        CohereRerank = None
-        COHERE_RERANK_AVAILABLE = False
+        try:
+            from langchain_community.retrievers import ContextualCompressionRetriever
+            from langchain_cohere import CohereRerank
+            COHERE_RERANK_AVAILABLE = True
+        except ImportError:
+            ContextualCompressionRetriever = None
+            CohereRerank = None
+            COHERE_RERANK_AVAILABLE = False
 
 try:
     import cohere
@@ -123,15 +134,28 @@ class IntelligentRAG:
         from langchain_core.documents import Document
         
         class RerankRetriever(BaseRetriever):
+            """使用 Cohere SDK 手动实现的 Reranker 检索器包装器"""
+            
             def __init__(self, base_retriever, cohere_client, top_n):
+                # 在 LangChain 1.0+ 中，BaseRetriever 使用 Pydantic 模型
+                # 我们需要使用 object.__setattr__ 绕过 Pydantic 验证
                 super().__init__()
-                self.base_retriever = base_retriever
-                self.cohere_client = cohere_client
-                self.top_n = top_n
+                object.__setattr__(self, 'base_retriever', base_retriever)
+                object.__setattr__(self, 'cohere_client', cohere_client)
+                object.__setattr__(self, 'top_n', top_n)
             
             def _get_relevant_documents(self, query: str) -> List[Document]:
                 # 从基础检索器获取文档
-                docs = self.base_retriever.get_relevant_documents(query)
+                # LangChain 1.0+ 使用 invoke() 方法
+                try:
+                    docs = self.base_retriever.invoke(query)
+                except AttributeError:
+                    # 兼容旧版本 API
+                    try:
+                        docs = self.base_retriever.get_relevant_documents(query)
+                    except AttributeError:
+                        # 如果都不行，尝试直接调用
+                        docs = self.base_retriever(query)
                 
                 if len(docs) <= self.top_n:
                     return docs
@@ -172,16 +196,30 @@ class IntelligentRAG:
         ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
         
         class OllamaRerankRetriever(BaseRetriever):
+            """使用 Ollama Reranker 的检索器包装器"""
+            
             def __init__(self, base_retriever, ollama_model, ollama_url, top_n):
+                # 在 LangChain 1.0+ 中，BaseRetriever 使用 Pydantic 模型
+                # 我们需要使用 model_construct 或直接设置属性
                 super().__init__()
-                self.base_retriever = base_retriever
-                self.ollama_model = ollama_model
-                self.ollama_url = ollama_url
-                self.top_n = top_n
+                # 使用 object.__setattr__ 绕过 Pydantic 验证
+                object.__setattr__(self, 'base_retriever', base_retriever)
+                object.__setattr__(self, 'ollama_model', ollama_model)
+                object.__setattr__(self, 'ollama_url', ollama_url)
+                object.__setattr__(self, 'top_n', top_n)
             
             def _get_relevant_documents(self, query: str) -> List[Document]:
                 # 从基础检索器获取文档
-                docs = self.base_retriever.get_relevant_documents(query)
+                # LangChain 1.0+ 使用 invoke() 方法
+                try:
+                    docs = self.base_retriever.invoke(query)
+                except AttributeError:
+                    # 兼容旧版本 API
+                    try:
+                        docs = self.base_retriever.get_relevant_documents(query)
+                    except AttributeError:
+                        # 如果都不行，尝试直接调用
+                        docs = self.base_retriever(query)
                 
                 if len(docs) <= self.top_n:
                     return docs
@@ -259,15 +297,28 @@ class IntelligentRAG:
             raise ValueError("本地 Reranker 未初始化，请检查 reranker_model_path 参数")
         
         class LocalRerankRetriever(BaseRetriever):
+            """使用本地 Reranker 的检索器包装器"""
+            
             def __init__(self, base_retriever, reranker, top_n):
+                # 在 LangChain 1.0+ 中，BaseRetriever 使用 Pydantic 模型
+                # 我们需要使用 object.__setattr__ 绕过 Pydantic 验证
                 super().__init__()
-                self.base_retriever = base_retriever
-                self.reranker = reranker
-                self.top_n = top_n
+                object.__setattr__(self, 'base_retriever', base_retriever)
+                object.__setattr__(self, 'reranker', reranker)
+                object.__setattr__(self, 'top_n', top_n)
             
             def _get_relevant_documents(self, query: str) -> List[Document]:
                 # 从基础检索器获取文档
-                docs = self.base_retriever.get_relevant_documents(query)
+                # LangChain 1.0+ 使用 invoke() 方法
+                try:
+                    docs = self.base_retriever.invoke(query)
+                except AttributeError:
+                    # 兼容旧版本 API
+                    try:
+                        docs = self.base_retriever.get_relevant_documents(query)
+                    except AttributeError:
+                        # 如果都不行，尝试直接调用
+                        docs = self.base_retriever(query)
                 
                 if len(docs) <= self.top_n:
                     return docs
@@ -459,30 +510,87 @@ class IntelligentRAG:
             retriever = base_retriever
             print("未启用重排序")
         
-        # 定义提示模板
-        prompt_template = """使用以下上下文信息回答最后的问题。
-如果你不知道答案，就说你不知道，不要编造答案。
+        # 定义提示模板 - 改进版，更好地处理概括性问题
+        prompt_template = """你是一个有用的AI助手。请根据以下提供的上下文信息回答问题。
 
-上下文:
+上下文信息：
 {context}
 
-问题: {question}
+问题：{question}
 
-回答:"""
+请基于上述上下文信息回答问题。重要提示：
+1. 上下文信息中包含了文档的完整内容，请仔细阅读并理解
+2. 如果问题是关于"主要内容"、"总结"、"概述"、"关键信息"等概括性问题，请基于上下文中的所有信息进行全面的概括和总结
+3. 对于"主要内容是什么"这类问题，上下文信息本身就是文档内容，请直接基于这些内容进行概括
+4. 如果问题是具体的事实性问题，请从上下文中找到相关信息并详细回答
+5. 只有在上下文中确实完全没有相关信息时，才说"根据提供的上下文，我无法找到相关信息"
+6. 尽量使用上下文中的具体信息，不要编造答案
+
+回答："""
         
         PROMPT = PromptTemplate(
             template=prompt_template,
             input_variables=["context", "question"]
         )
         
-        # 创建问答链
-        self.qa_chain = RetrievalQA.from_chain_type(
-            llm=llm,
-            chain_type="stuff",
-            retriever=retriever,
-            return_source_documents=True,
-            chain_type_kwargs={"prompt": PROMPT}
-        )
+        # 创建问答链 - 使用 LangChain 1.2.7+ 的新 API
+        if RETRIEVAL_QA_AVAILABLE and RetrievalQA:
+            # 如果旧版 API 可用，使用它
+            self.qa_chain = RetrievalQA.from_chain_type(
+                llm=llm,
+                chain_type="stuff",
+                retriever=retriever,
+                return_source_documents=True,
+                chain_type_kwargs={"prompt": PROMPT}
+            )
+        else:
+            # 使用新的 API - 创建自定义 RAG 链
+            from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+            from langchain_core.output_parsers import StrOutputParser
+            
+            def format_docs(docs):
+                return "\n\n".join(doc.page_content for doc in docs)
+            
+            # 创建一个函数来从输入中提取 question 并调用 retriever
+            def retrieve_docs(input_dict):
+                question = input_dict.get("question", "")
+                return retriever.invoke(question)
+            
+            # 创建一个函数来提取 question 字段
+            def extract_question(input_dict):
+                return input_dict.get("question", "")
+            
+            # 创建检索和生成链
+            # 使用 RunnableLambda 确保 retriever 接收字符串而不是字典
+            rag_chain = (
+                {
+                    "context": RunnableLambda(retrieve_docs) | format_docs,
+                    "question": RunnableLambda(extract_question)
+                }
+                | PROMPT
+                | llm
+                | StrOutputParser()
+            )
+            
+            # 包装成兼容的接口
+            class CustomRAGChain:
+                def __init__(self, chain, retriever):
+                    self.chain = chain
+                    self.retriever = retriever
+                
+                def invoke(self, inputs):
+                    query = inputs.get("query", "")
+                    # 获取源文档 - LangChain 1.0+ 使用 invoke() 方法
+                    # retriever 实现了 Runnable 接口，可以直接调用 invoke
+                    source_docs = self.retriever.invoke(query)
+                    # 生成答案
+                    answer = self.chain.invoke({"question": query})
+                    return {
+                        "result": answer,
+                        "source_documents": source_docs
+                    }
+            
+            self.qa_chain = CustomRAGChain(rag_chain, retriever)
         print("问答链已创建")
     
     def build(self, k: int = 4, use_rerank: bool = True, rerank_top_n: int = 3):
@@ -510,12 +618,13 @@ class IntelligentRAG:
         
         print("RAG 系统构建完成！")
     
-    def query(self, question: str) -> dict:
+    def query(self, question: str, verbose: bool = False) -> dict:
         """
         查询问题
         
         Args:
             question: 用户问题
+            verbose: 是否显示调试信息（检索到的文档内容）
             
         Returns:
             包含答案和源文档的字典
@@ -524,6 +633,15 @@ class IntelligentRAG:
             raise ValueError("请先构建 RAG 系统")
         
         result = self.qa_chain.invoke({"query": question})
+        
+        # 如果启用详细模式，显示检索到的文档内容
+        if verbose:
+            print("\n[调试信息] 检索到的文档内容：")
+            print("-" * 50)
+            for i, doc in enumerate(result["source_documents"], 1):
+                print(f"\n文档 {i}:")
+                print(doc.page_content[:500] + "..." if len(doc.page_content) > 500 else doc.page_content)
+            print("-" * 50)
         
         return {
             "answer": result["result"],

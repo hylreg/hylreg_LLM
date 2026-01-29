@@ -3,6 +3,7 @@
 """
 
 import os
+from pathlib import Path
 from rag_system import IntelligentRAG
 
 
@@ -12,13 +13,17 @@ def main():
     # 如果 Ollama 运行在其他地址，可以设置：
     # os.environ["OLLAMA_BASE_URL"] = "http://localhost:11434"
     
+    # 获取脚本所在目录，确保路径正确
+    script_dir = Path(__file__).parent
+    documents_path = script_dir / "documents"
+    
     # 初始化 RAG 系统（使用 Ollama 模型）
     # 注意：需要先使用 ollama pull 下载相应的模型
     # 例如：ollama pull qwen3:0.6b
     #      ollama pull qwen3-embedding:0.6b
     #      ollama pull dengcao/Qwen3-Reranker-0.6B:Q8_0
     rag = IntelligentRAG(
-        documents_path="./documents",  # 文档目录路径
+        documents_path=str(documents_path),  # 文档目录路径
         embedding_model="qwen3-embedding:0.6b",  # Ollama 嵌入模型
         llm_model="qwen3:0.6b",  # Ollama LLM 模型
         chunk_size=1000,
@@ -42,10 +47,12 @@ def main():
         "RAG 系统的主要优势有哪些？",
     ]
     
-    for question in questions:
-        print(f"\n问题: {question}")
+    for i, question in enumerate(questions, 1):
+        print(f"\n问题 {i}: {question}")
         print("-" * 50)
-        result = rag.query(question)
+        # 对第一个问题启用调试模式，查看检索到的文档内容
+        verbose = (i == 1)
+        result = rag.query(question, verbose=verbose)
         print(f"回答: {result['answer']}")
         print(f"\n参考文档数量: {len(result['source_documents'])}")
         print("=" * 50)

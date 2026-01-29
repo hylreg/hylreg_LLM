@@ -3,6 +3,7 @@
 """
 
 import os
+from pathlib import Path
 from rag_system import IntelligentRAG
 
 
@@ -11,6 +12,10 @@ def main():
     os.environ["USE_OLLAMA"] = "true"
     # 如果 Ollama 运行在其他地址，可以设置：
     # os.environ["OLLAMA_BASE_URL"] = "http://localhost:11434"
+    
+    # 获取脚本所在目录，确保路径正确
+    script_dir = Path(__file__).parent
+    documents_path = script_dir / "documents"
     
     # 初始化 RAG 系统（使用 Ollama 模型 + Ollama Reranker）
     # 注意：
@@ -21,7 +26,7 @@ def main():
     # 2. 确保 Ollama 服务正在运行
     
     rag = IntelligentRAG(
-        documents_path="./documents",  # 文档目录路径
+        documents_path=str(documents_path),  # 文档目录路径
         embedding_model="qwen3-embedding:0.6b",  # Ollama 嵌入模型
         llm_model="qwen3:0.6b",  # Ollama LLM 模型
         chunk_size=1000,

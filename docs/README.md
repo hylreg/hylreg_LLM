@@ -13,6 +13,7 @@
 
 ### 工具文档
 - [量化使用指南](量化使用指南.md) - llama.cpp 模型量化使用指南
+- [魔搭模型下载指南](魔搭模型下载指南.md) - ModelScope 模型下载使用指南
 
 ### 示例代码
 - [Ollama 示例](../RAG/example_ollama.py) - 使用 Ollama 的示例代码

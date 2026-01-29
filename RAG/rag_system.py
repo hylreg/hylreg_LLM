@@ -1,6 +1,26 @@
 """
 简单的 RAG (Retrieval-Augmented Generation) 系统实现
-使用 LangChain 构建
+
+本模块提供了一个基于 LangChain 的 RAG 系统，支持：
+- 多种 LLM 后端（Ollama、硅基流动、OpenAI）
+- 多种嵌入模型
+- 多种重排序方式（Ollama Reranker、本地 Reranker、Cohere API）
+- 文档加载、分割、向量化和检索
+
+主要类：
+    IntelligentRAG: RAG 系统的核心类，提供完整的 RAG 功能
+
+使用示例：
+    >>> from rag_system import IntelligentRAG
+    >>> rag = IntelligentRAG(
+    ...     documents_path="./documents",
+    ...     embedding_model="qwen3-embedding:0.6b",
+    ...     llm_model="qwen3:0.6b",
+    ...     ollama_reranker_model="dengcao/Qwen3-Reranker-0.6B:Q8_0"
+    ... )
+    >>> rag.build(k=4, use_rerank=True, rerank_top_n=3)
+    >>> result = rag.query("你的问题")
+    >>> print(result["answer"])
 """
 
 import os
@@ -59,7 +79,35 @@ load_dotenv()
 
 
 class IntelligentRAG:
-    """智能 RAG 系统类 - 支持多种 LLM 和嵌入模型"""
+    """
+    智能 RAG 系统类 - 支持多种 LLM 和嵌入模型
+    
+    该类实现了完整的 RAG 流程：
+    1. 文档加载和预处理
+    2. 文档分割为小块
+    3. 向量化和存储
+    4. 检索和重排序
+    5. 基于检索结果的问答生成
+    
+    支持的后端：
+    - LLM: Ollama、硅基流动、OpenAI
+    - 嵌入模型: Ollama、硅基流动、OpenAI
+    - 重排序: Ollama Reranker、本地 Qwen Reranker、Cohere API
+    
+    重排序优先级：
+    1. Ollama Reranker（如果设置了 ollama_reranker_model）
+    2. 本地 Reranker（如果设置了 reranker_model_path）
+    3. Cohere API（如果设置了 COHERE_API_KEY）
+    
+    示例：
+        >>> rag = IntelligentRAG(
+        ...     documents_path="./documents",
+        ...     embedding_model="qwen3-embedding:0.6b",
+        ...     llm_model="qwen3:0.6b"
+        ... )
+        >>> rag.build(k=4, use_rerank=True, rerank_top_n=3)
+        >>> result = rag.query("文档的主要内容是什么？")
+    """
     
     def __init__(
         self,
@@ -113,7 +161,19 @@ class IntelligentRAG:
             print(f"将使用 Ollama Reranker 模型: {self.ollama_reranker_model}")
         
     def load_documents(self) -> List:
-        """加载文档"""
+        """
+        加载文档
+        
+        支持单个文件或目录：
+        - 如果 documents_path 是文件，加载该文件
+        - 如果 documents_path 是目录，加载目录下所有 .txt 文件
+        
+        Returns:
+            List: 加载的文档列表，每个文档是 Document 对象
+            
+        Raises:
+            FileNotFoundError: 如果指定的路径不存在
+        """
         if os.path.isfile(self.documents_path):
             loader = TextLoader(self.documents_path, encoding="utf-8")
         else:
@@ -129,7 +189,19 @@ class IntelligentRAG:
         return documents
     
     def _create_manual_rerank_retriever(self, base_retriever, cohere_api_key: str, top_n: int):
-        """创建手动重排序的检索器包装器"""
+        """
+        创建使用 Cohere SDK 手动实现的重排序检索器包装器
+        
+        当 LangChain 的 CohereRerank 不可用时，使用 Cohere SDK 手动实现重排序。
+        
+        Args:
+            base_retriever: 基础检索器
+            cohere_api_key: Cohere API Key
+            top_n: 重排序后保留的文档数量
+            
+        Returns:
+            BaseRetriever: 包装后的检索器，会自动进行重排序
+        """
         from langchain_core.retrievers import BaseRetriever
         from langchain_core.documents import Document
         
@@ -184,7 +256,26 @@ class IntelligentRAG:
         return RerankRetriever(base_retriever, cohere_client, top_n)
     
     def _create_ollama_rerank_retriever(self, base_retriever, top_n: int):
-        """创建使用 Ollama Reranker 的检索器包装器"""
+        """
+        创建使用 Ollama Reranker 的检索器包装器
+        
+        通过调用 Ollama API 的 generate 接口，使用 Reranker 模型对检索结果进行重排序。
+        
+        Args:
+            base_retriever: 基础检索器
+            top_n: 重排序后保留的文档数量
+            
+        Returns:
+            BaseRetriever: 包装后的检索器，会自动进行重排序
+            
+        Raises:
+            ValueError: 如果 ollama_reranker_model 未设置
+            
+        Note:
+            - 使用 Query-Document 格式的 prompt 进行评分
+            - 从模型响应中提取数字分数进行排序
+            - 如果评分失败，会使用默认分数或返回原始结果
+        """
         from langchain_core.retrievers import BaseRetriever
         from langchain_core.documents import Document
         import requests
@@ -289,7 +380,25 @@ class IntelligentRAG:
         return OllamaRerankRetriever(base_retriever, self.ollama_reranker_model, ollama_base_url, top_n)
     
     def _create_local_rerank_retriever(self, base_retriever, top_n: int):
-        """创建使用本地 Reranker 的检索器包装器"""
+        """
+        创建使用本地 Reranker 的检索器包装器
+        
+        使用 FlagReranker（本地 Qwen Reranker）对检索结果进行重排序。
+        
+        Args:
+            base_retriever: 基础检索器
+            top_n: 重排序后保留的文档数量
+            
+        Returns:
+            BaseRetriever: 包装后的检索器，会自动进行重排序
+            
+        Raises:
+            ValueError: 如果本地 Reranker 未初始化
+            
+        Note:
+            - 使用 FlagReranker.rerank() 方法进行批量重排序
+            - 支持不同的返回格式（字典、元组、整数）
+        """
         from langchain_core.retrievers import BaseRetriever
         from langchain_core.documents import Document
         
@@ -354,7 +463,22 @@ class IntelligentRAG:
         return LocalRerankRetriever(base_retriever, self.local_reranker, top_n)
     
     def split_documents(self, documents: List) -> List:
-        """分割文档为小块"""
+        """
+        分割文档为小块
+        
+        使用 RecursiveCharacterTextSplitter 将文档分割为指定大小的块，
+        块之间会有重叠以保持上下文连续性。
+        
+        Args:
+            documents: 要分割的文档列表
+            
+        Returns:
+            List: 分割后的文档块列表
+            
+        Note:
+            - chunk_size: 每个块的最大字符数（默认 1000）
+            - chunk_overlap: 块之间的重叠字符数（默认 200）
+        """
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.chunk_size,
             chunk_overlap=self.chunk_overlap,
@@ -365,7 +489,23 @@ class IntelligentRAG:
         return splits
     
     def create_vectorstore(self, documents: List):
-        """创建向量存储"""
+        """
+        创建向量存储
+        
+        根据环境变量自动选择嵌入模型后端，然后使用 FAISS 创建向量存储。
+        
+        Args:
+            documents: 已分割的文档列表
+            
+        Note:
+            后端选择优先级：
+            1. Ollama（如果 USE_OLLAMA=true）
+            2. 硅基流动（如果设置了 SILICONFLOW_API_KEY）
+            3. OpenAI（默认）
+            
+        Raises:
+            ValueError: 如果文档列表为空
+        """
         # 从环境变量获取配置
         ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
         use_ollama = os.getenv("USE_OLLAMA", "false").lower() == "true"
@@ -438,17 +578,21 @@ class IntelligentRAG:
             llm = ChatOpenAI(model=self.llm_model, temperature=0)
             print("使用 OpenAI API 创建 LLM")
         
-        # 创建基础检索器（检索更多文档用于重排序）
+        # 创建基础检索器
+        # 如果启用重排序，检索 k*2 个文档以便重排序后选择最佳的 top_n 个
+        # 如果未启用重排序，直接检索 k 个文档
         base_retriever = self.vectorstore.as_retriever(
             search_type="similarity",
-            search_kwargs={"k": k * 2 if use_rerank else k}  # 如果使用重排序，检索更多文档
+            search_kwargs={"k": k * 2 if use_rerank else k}
         )
         
         # 如果启用重排序，创建带重排序的检索器
+        # 重排序优先级：Ollama Reranker > 本地 Reranker > Cohere API
         if use_rerank:
             retriever = None
             
             # 优先级1: 使用 Ollama Reranker（如果已设置）
+            # 优点：无需 API Key，本地运行，延迟低
             if self.ollama_reranker_model:
                 try:
                     retriever = self._create_ollama_rerank_retriever(
@@ -460,6 +604,7 @@ class IntelligentRAG:
                     retriever = None
             
             # 优先级2: 使用本地 Reranker（如果已初始化且 Ollama Reranker 不可用）
+            # 优点：完全离线，无需网络，使用 FlagReranker
             if retriever is None and self.local_reranker is not None:
                 try:
                     retriever = self._create_local_rerank_retriever(
@@ -471,6 +616,7 @@ class IntelligentRAG:
                     retriever = None
             
             # 优先级3: 使用 Cohere API（如果本地 Reranker 不可用或失败）
+            # 优点：云端服务，无需本地模型，支持多语言
             if retriever is None:
                 cohere_api_key = os.getenv("COHERE_API_KEY")
                 if cohere_api_key and COHERE_RERANK_AVAILABLE:
@@ -510,7 +656,9 @@ class IntelligentRAG:
             retriever = base_retriever
             print("未启用重排序")
         
-        # 定义提示模板 - 改进版，更好地处理概括性问题
+        # 定义提示模板
+        # 改进版提示模板，更好地处理概括性问题（如"主要内容是什么"）
+        # 明确指导模型如何处理不同类型的查询
         prompt_template = """你是一个有用的AI助手。请根据以下提供的上下文信息回答问题。
 
 上下文信息：
@@ -572,7 +720,8 @@ class IntelligentRAG:
                 | StrOutputParser()
             )
             
-            # 包装成兼容的接口
+            # 包装成兼容的接口，统一返回格式
+            # CustomRAGChain 类实现了与旧版 RetrievalQA 兼容的接口
             class CustomRAGChain:
                 def __init__(self, chain, retriever):
                     self.chain = chain
@@ -649,14 +798,36 @@ class IntelligentRAG:
         }
     
     def save_vectorstore(self, path: str):
-        """保存向量存储到磁盘"""
+        """
+        保存向量存储到磁盘
+        
+        将已创建的向量存储保存到指定路径，以便后续快速加载。
+        
+        Args:
+            path: 保存路径（目录）
+            
+        Raises:
+            ValueError: 如果向量存储不存在
+        """
         if self.vectorstore is None:
             raise ValueError("向量存储不存在")
         self.vectorstore.save_local(path)
         print(f"向量存储已保存到 {path}")
     
     def load_vectorstore(self, path: str):
-        """从磁盘加载向量存储"""
+        """
+        从磁盘加载向量存储
+        
+        从指定路径加载之前保存的向量存储。如果 embeddings 未初始化，
+        会根据环境变量自动初始化。
+        
+        Args:
+            path: 向量存储的保存路径
+            
+        Raises:
+            FileNotFoundError: 如果指定的路径不存在
+            ValueError: 如果 embeddings 未初始化且无法从环境变量创建
+        """
         if self.embeddings is None:
             # 从环境变量获取配置
             ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")

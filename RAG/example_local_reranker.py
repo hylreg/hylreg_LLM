@@ -1,5 +1,16 @@
 """
 使用本地 Qwen Reranker 的 RAG 系统示例
+
+本示例展示如何使用本地下载的 Qwen Reranker 模型进行重排序。
+适合需要完全离线运行或不想依赖 Ollama Reranker 的场景。
+
+运行前准备：
+1. 安装 Ollama 并下载模型:
+   - ollama pull qwen3:0.6b
+   - ollama pull qwen3-embedding:0.6b
+2. 下载 Qwen Reranker 模型到本地:
+   - huggingface-cli download --resume-download Qwen/Qwen3-Reranker-0.6B --local-dir ./Qwen/Qwen3-Reranker-0.6B
+3. 确保模型路径正确（默认：项目根目录/Qwen/Qwen3-Reranker-0.6B）
 """
 
 import os

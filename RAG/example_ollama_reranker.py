@@ -1,5 +1,21 @@
 """
 使用 Ollama Reranker 的 RAG 系统示例
+
+本示例展示如何使用 Ollama Reranker 进行重排序。
+这是推荐的重排序方式，设置简单，无需下载本地模型。
+
+运行前准备：
+1. 安装 Ollama: https://ollama.ai
+2. 下载所有需要的模型:
+   - ollama pull qwen3:0.6b
+   - ollama pull qwen3-embedding:0.6b
+   - ollama pull dengcao/Qwen3-Reranker-0.6B:Q8_0
+3. 确保 Ollama 服务正在运行
+
+优势：
+- 无需 API Key
+- 本地运行，延迟低
+- 设置简单，只需 pull 模型
 """
 
 import os

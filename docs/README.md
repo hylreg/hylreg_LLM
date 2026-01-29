@@ -11,10 +11,14 @@
 ### 部署指南
 - [Reranker 部署指南](../RAG/DEPLOY_RERANKER.md) - 本地 Qwen Reranker 部署说明
 
+### 工具文档
+- [量化使用指南](量化使用指南.md) - llama.cpp 模型量化使用指南
+
 ### 示例代码
 - [Ollama 示例](../RAG/example_ollama.py) - 使用 Ollama 的示例代码
 - [Ollama Reranker 示例](../RAG/example_ollama_reranker.py) - 使用 Ollama Reranker 的示例
 - [本地 Reranker 示例](../RAG/example_local_reranker.py) - 使用本地 Reranker 的示例
+- [基础示例](../RAG/example.py) - 使用 API 服务的示例
 
 ## 📖 文档结构
 
@@ -35,7 +39,7 @@ hylreg_LLM/
 
 - **想要快速开始？** → 查看 [项目主 README](../README.md)
 - **需要了解 RAG 系统？** → 查看 [RAG 系统文档](../RAG/README.md)
-- **需要部署 Reranker？** → 查看 [Reranker 部署指南](../RAG/DEPLOY_RERANKER.md)
+- **需要部署本地 Reranker？** → 查看 [Reranker 部署指南](../RAG/DEPLOY_RERANKER.md)
 - **需要代码示例？** → 查看 RAG 目录下的 `example_*.py` 文件
 
 ## 📝 添加新文档

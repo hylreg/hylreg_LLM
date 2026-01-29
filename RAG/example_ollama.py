@@ -1,5 +1,16 @@
 """
 使用 Ollama 的 RAG 系统示例
+
+本示例展示如何使用 Ollama 作为后端运行 RAG 系统。
+需要先安装 Ollama 并下载相应的模型。
+
+运行前准备：
+1. 安装 Ollama: https://ollama.ai
+2. 下载模型:
+   - ollama pull qwen3:0.6b
+   - ollama pull qwen3-embedding:0.6b
+   - ollama pull dengcao/Qwen3-Reranker-0.6B:Q8_0
+3. 确保 Ollama 服务正在运行
 """
 
 import os

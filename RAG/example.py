@@ -1,5 +1,14 @@
 """
 RAG 系统使用示例
+
+本示例展示如何使用 RAG 系统，支持多种后端配置。
+根据环境变量自动选择后端（Ollama、硅基流动、OpenAI）。
+
+使用前请设置相应的环境变量：
+- Ollama: USE_OLLAMA=true
+- 硅基流动: SILICONFLOW_API_KEY, SILICONFLOW_BASE_URL
+- OpenAI: OPENAI_API_KEY
+- Cohere Reranker: COHERE_API_KEY（可选）
 """
 
 import os

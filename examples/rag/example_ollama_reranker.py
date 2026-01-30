@@ -1,4 +1,7 @@
 """
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 使用 Ollama Reranker 的 RAG 系统示例
 
 本示例展示如何使用 Ollama Reranker 进行重排序。
@@ -20,7 +23,7 @@
 
 import os
 from pathlib import Path
-from rag_system import IntelligentRAG
+from RAG.rag_system import IntelligentRAG
 
 
 def main():
@@ -29,9 +32,9 @@ def main():
     # 如果 Ollama 运行在其他地址，可以设置：
     # os.environ["OLLAMA_BASE_URL"] = "http://localhost:11434"
     
-    # 获取脚本所在目录，确保路径正确
-    script_dir = Path(__file__).parent
-    documents_path = script_dir / "documents"
+    # 获取项目根目录
+    project_root = Path(__file__).parent.parent.parent
+    documents_path = project_root / "RAG" / "documents"
     
     # 初始化 RAG 系统（使用 Ollama 模型 + Ollama Reranker）
     # 注意：

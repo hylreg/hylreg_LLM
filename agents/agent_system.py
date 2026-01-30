@@ -12,6 +12,15 @@ from langchain_openai import ChatOpenAI
 from langchain_community.chat_models import ChatOllama
 from langchain_community.llms.siliconflow import SiliconFlowLLM
 
+# ModelScope 支持
+try:
+    from langchain_community.llms import HuggingFacePipeline
+    from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+    MODELSCOPE_AVAILABLE = True
+except ImportError:
+    HuggingFacePipeline = None
+    MODELSCOPE_AVAILABLE = False
+
 
 class IntelligentAgent:
     """智能体系统"""
@@ -46,8 +55,8 @@ class IntelligentAgent:
     def _init_llm(self):
         """初始化 LLM，根据环境变量自动选择"""
         use_ollama = os.getenv("USE_OLLAMA", "").lower() == "true"
+        use_modelscope = os.getenv("USE_MODELSCOPE", "false").lower() == "true"
         siliconflow_api_key = os.getenv("SILICONFLOW_API_KEY")
-        openai_api_key = os.getenv("OPENAI_API_KEY")
         
         if use_ollama:
             ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
@@ -68,16 +77,49 @@ class IntelligentAgent:
                 base_url=siliconflow_base_url,
                 temperature=0.7,
             )
-        elif openai_api_key:
-            print(f"✓ 使用 OpenAI API, 模型: {self.llm_model}")
-            return ChatOpenAI(
-                model=self.llm_model,
-                api_key=openai_api_key,
-                temperature=0.7,
-            )
+        elif use_modelscope and MODELSCOPE_AVAILABLE:
+            # 使用魔搭 ModelScope LLM
+            # llm_model 应该是 ModelScope 模型路径，如 "qwen/Qwen-7B-Chat"
+            try:
+                print(f"✓ 正在加载魔搭 ModelScope LLM (模型: {self.llm_model})...")
+                tokenizer = AutoTokenizer.from_pretrained(
+                    self.llm_model,
+                    trust_remote_code=True
+                )
+                model = AutoModelForCausalLM.from_pretrained(
+                    self.llm_model,
+                    trust_remote_code=True,
+                    device_map="auto",
+                    torch_dtype="auto"
+                )
+                
+                pipe = pipeline(
+                    "text-generation",
+                    model=model,
+                    tokenizer=tokenizer,
+                    max_new_tokens=512,
+                    temperature=0.7,
+                    do_sample=True
+                )
+                
+                llm = HuggingFacePipeline(pipeline=pipe)
+                print(f"✓ 魔搭 ModelScope LLM 加载完成 (模型: {self.llm_model})")
+                return llm
+            except ImportError as e:
+                raise ValueError(
+                    f"ModelScope LLM 支持不可用。请安装: pip install transformers langchain-community"
+                )
+            except Exception as e:
+                raise ValueError(
+                    f"加载魔搭 ModelScope LLM 失败: {e}。请确保模型路径正确且已安装 transformers。"
+                )
         else:
+            if use_modelscope and not MODELSCOPE_AVAILABLE:
+                raise ValueError(
+                    "ModelScope 支持不可用。请安装: pip install transformers langchain-community"
+                )
             raise ValueError(
-                "未找到可用的 LLM 配置。请设置 USE_OLLAMA=true 或提供 API Key"
+                "未找到可用的 LLM 配置。请设置 USE_OLLAMA=true、USE_MODELSCOPE=true 或提供 SILICONFLOW_API_KEY 和 SILICONFLOW_BASE_URL"
             )
     
     def _default_system_prompt(self) -> str:

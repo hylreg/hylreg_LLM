@@ -14,8 +14,13 @@
 """
 
 import os
+import sys
 from pathlib import Path
-from rag_system import IntelligentRAG
+
+# 添加项目根目录到路径
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from RAG.rag_system import IntelligentRAG
 
 
 def main():
@@ -24,9 +29,9 @@ def main():
     # 如果 Ollama 运行在其他地址，可以设置：
     # os.environ["OLLAMA_BASE_URL"] = "http://localhost:11434"
     
-    # 获取脚本所在目录，确保路径正确
-    script_dir = Path(__file__).parent
-    documents_path = script_dir / "documents"
+    # 获取项目根目录
+    project_root = Path(__file__).parent.parent.parent
+    documents_path = project_root / "RAG" / "documents"
     
     # 初始化 RAG 系统（使用 Ollama 模型）
     # 注意：需要先使用 ollama pull 下载相应的模型
@@ -48,7 +53,7 @@ def main():
     # rerank_top_n: 重排序后保留的文档数量
     # vectorstore_path: 向量存储保存路径（如果路径存在会自动加载，避免重复处理文档）
     # force_rebuild: 是否强制重新构建（默认 False，如果向量存储存在则直接加载）
-    vectorstore_path = script_dir / "vectorstore"
+    vectorstore_path = project_root / "RAG" / "vectorstore"
     rag.build(
         k=4, 
         use_rerank=True, 

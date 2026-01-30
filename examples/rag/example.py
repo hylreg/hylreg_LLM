@@ -2,18 +2,22 @@
 RAG 系统使用示例
 
 本示例展示如何使用 RAG 系统，支持多种后端配置。
-根据环境变量自动选择后端（Ollama、硅基流动、OpenAI）。
+根据环境变量自动选择后端（Ollama、硅基流动、魔搭 ModelScope）。
 
 使用前请设置相应的环境变量：
 - Ollama: USE_OLLAMA=true
 - 硅基流动: SILICONFLOW_API_KEY, SILICONFLOW_BASE_URL
-- OpenAI: OPENAI_API_KEY
-- Cohere Reranker: COHERE_API_KEY（可选）
+- 魔搭 ModelScope: USE_MODELSCOPE=true
 """
 
 import os
+import sys
 from pathlib import Path
-from rag_system import IntelligentRAG
+
+# 添加项目根目录到路径
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from RAG.rag_system import IntelligentRAG
 
 
 def main():
@@ -26,17 +30,19 @@ def main():
     # os.environ["SILICONFLOW_API_KEY"] = "your-siliconflow-api-key"
     # os.environ["SILICONFLOW_BASE_URL"] = "https://api.siliconflow.cn/v1/"
     
-    # 方式3: 使用 OpenAI API
-    # os.environ["OPENAI_API_KEY"] = "your-openai-api-key"
+    # 方式3: 使用魔搭 ModelScope（本地模型）
+    # os.environ["USE_MODELSCOPE"] = "true"
+    # 注意：使用 ModelScope 时，embedding_model 和 llm_model 应该是 ModelScope 模型路径
+    # 例如：embedding_model="damo/nlp_gte_sentence-embedding_chinese-base"
+    #      llm_model="qwen/Qwen-7B-Chat"
     
     # 方式4: 启用重排序
     # 如果使用 Ollama，会自动使用 Ollama Reranker（无需 API Key）
-    # 如果不使用 Ollama，需要设置 Cohere API Key：
-    # os.environ["COHERE_API_KEY"] = "your-cohere-api-key"
+    # 如果不使用 Ollama，可以配置本地 Reranker（详见 DEPLOY_RERANKER.md）
     
-    # 获取脚本所在目录，确保路径正确
-    script_dir = Path(__file__).parent
-    documents_path = script_dir / "documents"
+    # 获取项目根目录
+    project_root = Path(__file__).parent.parent.parent
+    documents_path = project_root / "RAG" / "documents"
     
     # 初始化 RAG 系统
     # 如果使用 Ollama，需要设置相应的模型名称，例如：
@@ -56,11 +62,11 @@ def main():
     
     # 构建 RAG 系统
     # k: 初始检索的文档块数量（重排序前会检索 k*2 个文档）
-    # use_rerank: 是否启用重排序（如果使用 Ollama，则使用 Ollama Reranker；否则使用 Cohere API）
+    # use_rerank: 是否启用重排序（如果使用 Ollama，则使用 Ollama Reranker；否则需要配置本地 Reranker）
     # rerank_top_n: 重排序后保留的文档数量
     # vectorstore_path: 向量存储保存路径（如果路径存在会自动加载，避免重复处理文档）
     # force_rebuild: 是否强制重新构建（默认 False，如果向量存储存在则直接加载）
-    vectorstore_path = script_dir / "vectorstore"
+    vectorstore_path = project_root / "RAG" / "vectorstore"
     rag.build(
         k=4, 
         use_rerank=True, 

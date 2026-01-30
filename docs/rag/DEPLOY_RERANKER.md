@@ -32,7 +32,7 @@ pip install FlagEmbedding torch
 ### 方式1：在代码中指定 Reranker 路径
 
 ```python
-from rag_system import IntelligentRAG
+from RAG.rag_system import IntelligentRAG
 
 rag = IntelligentRAG(
     documents_path="./documents",
@@ -54,7 +54,7 @@ result = rag.query("你的问题")
 # 运行示例
 cd /home/lab/Projects/hylreg_LLM
 export USE_OLLAMA="true"
-uv run python RAG/example_local_reranker.py
+uv run python examples/rag/example_local_reranker.py
 ```
 
 ## 模型路径说明
@@ -69,8 +69,7 @@ uv run python RAG/example_local_reranker.py
 
 1. **Ollama Reranker**（如果 `ollama_reranker_model` 已设置）
 2. **本地 Reranker**（如果 `reranker_model_path` 已设置）
-3. **Cohere API**（如果设置了 `COHERE_API_KEY`）
-4. **基础检索器**（不使用重排序）
+3. **基础检索器**（不使用重排序）
 
 **注意**：如果同时设置了多个 Reranker，系统会按优先级顺序选择第一个可用的。
 
@@ -117,15 +116,15 @@ pip install FlagEmbedding
 
 ## 与其他 Reranker 对比
 
-| 特性 | Ollama Reranker | 本地 Qwen Reranker | Cohere API |
-|------|----------------|-------------------|------------|
-| 成本 | 免费 | 免费 | 按调用收费 |
-| 延迟 | 本地，低延迟 | 本地，低延迟 | 网络请求，较高延迟 |
-| 离线使用 | ✅ 支持 | ✅ 支持 | ❌ 需要网络 |
-| 中文支持 | ✅ 优秀 | ✅ 优秀 | ✅ 良好 |
-| 模型大小 | 通过 Ollama 管理 | 0.6B（约 2GB） | N/A |
-| 设置难度 | ⭐ 简单（只需 pull 模型） | ⭐⭐ 中等（需下载模型） | ⭐⭐⭐ 需要 API Key |
-| 推荐场景 | 已使用 Ollama | 需要完全离线控制 | 需要云端服务 |
+| 特性 | Ollama Reranker | 本地 Qwen Reranker |
+|------|----------------|-------------------|
+| 成本 | 免费 | 免费 |
+| 延迟 | 本地，低延迟 | 本地，低延迟 |
+| 离线使用 | ✅ 支持 | ✅ 支持 |
+| 中文支持 | ✅ 优秀 | ✅ 优秀 |
+| 模型大小 | 通过 Ollama 管理 | 0.6B（约 2GB） |
+| 设置难度 | ⭐ 简单（只需 pull 模型） | ⭐⭐ 中等（需下载模型） |
+| 推荐场景 | 已使用 Ollama | 需要完全离线控制 |
 
 **推荐**：如果已使用 Ollama，优先使用 Ollama Reranker，设置更简单。
 

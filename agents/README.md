@@ -28,7 +28,7 @@ pip install -e .
 |---------|---------|------|
 | **Ollama（推荐）** | `USE_OLLAMA=true` | 本地运行，无需 API Key |
 | 硅基流动 API | `SILICONFLOW_API_KEY`<br>`SILICONFLOW_BASE_URL` | 需要 API Key |
-| OpenAI API | `OPENAI_API_KEY` | 需要 API Key |
+| 魔搭 ModelScope | `USE_MODELSCOPE=true` | 本地模型，需要下载模型 |
 
 ### 使用 Ollama（推荐）
 
@@ -53,19 +53,19 @@ export USE_OLLAMA="true"
 export SILICONFLOW_API_KEY="your-api-key"
 export SILICONFLOW_BASE_URL="https://api.siliconflow.cn/v1/"
 
-# 或 OpenAI
-export OPENAI_API_KEY="your-api-key"
+# 或魔搭 ModelScope（本地模型）
+export USE_MODELSCOPE="true"
 ```
 
 ## 快速开始
 
 ```bash
 # 从项目根目录运行
-cd /Users/admin/Projects/hylreg_LLM
+cd /home/lab/Projects/hylreg_LLM
 
 # 使用 Ollama（推荐）
 export USE_OLLAMA="true"
-uv run python agents/example.py
+uv run python examples/agents/example.py
 ```
 
 ## 使用方法
@@ -73,7 +73,7 @@ uv run python agents/example.py
 ### 基本使用
 
 ```python
-from agent_system import IntelligentAgent
+from agents.agent_system import IntelligentAgent
 
 # 初始化智能体
 agent = IntelligentAgent(
@@ -89,8 +89,8 @@ print(response)
 ## 文件说明
 
 - `agent_system.py`: 智能体系统核心实现
-- `example.py`: 使用示例
-- `tools/`: 工具目录（可选）
+- `examples/agents/example.py`: 使用示例
+- `tools/`: 工具目录（可选，如需要可自行创建）
 
 ## 常见问题
 
@@ -120,8 +120,9 @@ ollama pull qwen3:0.6b
 ## 注意事项
 
 - **Ollama**: 需要先安装并运行 Ollama 服务，下载相应的模型
-- **API Key**: 使用硅基流动或 OpenAI 时需要有效的 API Key
-- 系统会自动检测环境变量，优先级：Ollama > 硅基流动 > OpenAI
+- **API Key**: 使用硅基流动时需要有效的 API Key
+- **ModelScope**: 使用魔搭 ModelScope 时需要先下载模型（详见 [魔搭模型下载指南](../docs/魔搭模型下载指南.md)）
+- 系统会自动检测环境变量，优先级：Ollama > 硅基流动 > 魔搭 ModelScope
 
 ## 更多文档
 

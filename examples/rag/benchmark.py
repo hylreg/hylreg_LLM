@@ -1,4 +1,7 @@
 """
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 RAG 系统性能测试脚本
 
 本脚本用于测试和统计 RAG 系统的各项性能指标，包括：
@@ -24,7 +27,6 @@ RAG 系统性能测试脚本
     USE_OLLAMA=true              # 使用 Ollama 后端
     OLLAMA_BASE_URL=http://localhost:11434
     SILICONFLOW_API_KEY=...      # 使用硅基流动 API
-    COHERE_API_KEY=...           # 使用 Cohere Reranker
 """
 
 import os
@@ -33,7 +35,7 @@ import json
 from pathlib import Path
 from typing import Dict, List, Optional
 from datetime import datetime
-from rag_system import IntelligentRAG
+from RAG.rag_system import IntelligentRAG
 
 # 尝试导入 psutil，如果不可用则使用简化版本
 try:
@@ -322,10 +324,10 @@ def main():
     if not use_ollama:
         print("提示: 设置 USE_OLLAMA=true 环境变量可使用 Ollama 后端")
     
-    # 获取脚本目录
-    script_dir = Path(__file__).parent
-    documents_path = script_dir / "documents"
-    vectorstore_path = script_dir / "vectorstore"
+    # 获取项目根目录
+    project_root = Path(__file__).parent.parent.parent
+    documents_path = project_root / "RAG" / "documents"
+    vectorstore_path = project_root / "RAG" / "vectorstore"
     
     # 初始化 RAG 系统
     print("初始化 RAG 系统...")
@@ -366,7 +368,7 @@ def main():
     query_summary = benchmark.benchmark_query(test_questions, warmup=1)
     
     # 生成完整报告
-    report_file = script_dir / "performance_report.json"
+    report_file = project_root / "data" / "outputs" / "performance_report.json"
     benchmark.generate_report(str(report_file))
     
     print("\n" + "="*60)

@@ -34,21 +34,18 @@
 cd /home/lab/Projects/hylreg_LLM
 
 # 使用 uv 运行性能测试
-uv run python RAG/benchmark.py
+uv run python examples/rag/benchmark.py
 
 # 设置环境变量（使用 Ollama）
-USE_OLLAMA=true uv run python RAG/benchmark.py
-
-# 或者进入 RAG 目录运行
-cd RAG
-uv run python benchmark.py
+USE_OLLAMA=true uv run python examples/rag/benchmark.py
 ```
 
 ### 使用传统 Python 运行
 
 ```bash
-cd RAG
-python benchmark.py
+# 从项目根目录运行
+cd /home/lab/Projects/hylreg_LLM
+python examples/rag/benchmark.py
 ```
 
 ### 环境配置
@@ -212,7 +209,7 @@ pip install psutil
 
 ## 自定义测试
 
-你可以修改 `benchmark.py` 中的测试参数：
+你可以修改 `examples/rag/benchmark.py` 中的测试参数：
 
 ```python
 # 修改测试问题

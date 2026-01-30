@@ -9,11 +9,10 @@
 - 🎯 **重排序（Reranking）**：支持多种重排序方式，提高检索精度
   - Ollama Reranker（推荐，本地运行）
   - 本地 Qwen Reranker（完全离线）
-  - Cohere API（云端服务）
 - 🤖 **多 LLM 支持**：
   - Ollama（本地模型，推荐）
   - 硅基流动 API
-  - OpenAI API
+  - 魔搭 ModelScope（本地模型）
 - 🚀 **易于使用**：简洁的 API，快速上手
 
 ## 🚀 快速开始
@@ -52,8 +51,8 @@ export USE_OLLAMA="true"
 export SILICONFLOW_API_KEY="your-api-key"
 export SILICONFLOW_BASE_URL="https://api.siliconflow.cn/v1/"
 
-# 或 OpenAI
-export OPENAI_API_KEY="your-api-key"
+# 或魔搭 ModelScope（本地模型）
+export USE_MODELSCOPE="true"
 ```
 
 ### 3. 准备文档
@@ -65,17 +64,22 @@ export OPENAI_API_KEY="your-api-key"
 ```bash
 # 使用 Ollama（推荐）
 export USE_OLLAMA="true"
-uv run python RAG/example_ollama.py
+uv run python examples/rag/example_ollama.py
 
 # 或使用其他 API
-uv run python RAG/example.py
+uv run python examples/rag/example.py
+
+# 使用魔搭 ModelScope
+export USE_MODELSCOPE="true"
+uv run python examples/rag/example_modelscope.py
 ```
 
 ## 📚 文档
 
 - [RAG 系统详细文档](RAG/README.md) - 完整的使用说明和 API 文档
-- [Reranker 部署指南](RAG/DEPLOY_RERANKER.md) - 本地 Reranker 部署说明
+- [Reranker 部署指南](docs/rag/DEPLOY_RERANKER.md) - 本地 Reranker 部署说明
 - [文档索引](docs/README.md) - 所有文档的索引
+- [魔搭模型下载指南](docs/魔搭模型下载指南.md) - ModelScope 模型下载使用指南
 
 ## 💡 基本使用
 
@@ -108,15 +112,41 @@ print(result["answer"])
 
 ```
 hylreg_LLM/
-├── README.md              # 项目主文档（本文件）
-├── pyproject.toml         # 项目配置和依赖
-├── RAG/                   # RAG 系统核心代码
-│   ├── rag_system.py      # RAG 系统实现
-│   ├── example_*.py       # 使用示例
-│   ├── documents/         # 文档目录
-│   └── README.md          # RAG 系统详细文档
-└── docs/                  # 文档目录
-    └── README.md          # 文档索引
+├── README.md                 # 项目主文档（本文件）
+├── pyproject.toml            # 项目配置和依赖
+├── RAG/                      # RAG 系统核心代码
+│   ├── __init__.py
+│   ├── rag_system.py        # RAG 系统实现
+│   ├── documents/           # 文档目录
+│   ├── vectorstore/         # 向量存储目录
+│   └── README.md            # RAG 系统详细文档
+├── agents/                   # 智能体系统核心代码
+│   ├── __init__.py
+│   ├── agent_system.py      # 智能体系统实现
+│   └── README.md            # 智能体系统文档
+├── examples/                 # 示例代码目录
+│   ├── rag/                 # RAG 系统示例
+│   │   ├── example.py       # 基础示例
+│   │   ├── example_ollama.py
+│   │   ├── example_modelscope.py
+│   │   └── ...
+│   └── agents/              # 智能体系统示例
+│       └── example.py
+├── scripts/                  # 工具脚本目录
+│   ├── download_qwen_reranker.py  # 模型下载脚本
+│   └── main.py              # 主入口脚本
+├── docs/                     # 文档目录
+│   ├── README.md           # 文档索引
+│   ├── rag/                # RAG 相关文档
+│   │   ├── DEPLOY_RERANKER.md
+│   │   ├── BENCHMARK.md
+│   │   └── VECTOR_STORE.md
+│   ├── 魔搭模型下载指南.md
+│   └── ...
+└── data/                     # 数据目录
+    ├── models/              # 模型文件（可选）
+    └── outputs/             # 输出文件
+        └── performance_report.json
 ```
 
 ## 🤝 贡献

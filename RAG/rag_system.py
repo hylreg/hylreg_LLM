@@ -2,9 +2,9 @@
 简单的 RAG (Retrieval-Augmented Generation) 系统实现
 
 本模块提供了一个基于 LangChain 的 RAG 系统，支持：
-- 多种 LLM 后端（Ollama、硅基流动、OpenAI）
+- 多种 LLM 后端（Ollama、硅基流动、魔搭 ModelScope）
 - 多种嵌入模型
-- 多种重排序方式（Ollama Reranker、本地 Reranker、Cohere API）
+- 多种重排序方式（Ollama Reranker、本地 Reranker）
 - 文档加载、分割、向量化和检索
 
 主要类：
@@ -31,6 +31,14 @@ from langchain_community.document_loaders import TextLoader, DirectoryLoader
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_ollama import OllamaEmbeddings, ChatOllama
+
+# ModelScope 支持
+try:
+    from langchain_community.embeddings import HuggingFaceEmbeddings
+    MODELSCOPE_AVAILABLE = True
+except ImportError:
+    HuggingFaceEmbeddings = None
+    MODELSCOPE_AVAILABLE = False
 # LangChain 1.2.7+ 中 RetrievalQA 已被移除，使用新的 API
 # 我们将使用 create_retrieval_chain 或自定义实现
 # LangChain 1.0+ 不再包含 langchain.chains，直接使用新 API
@@ -41,29 +49,14 @@ from langchain_core.prompts import PromptTemplate
 # 重排序相关导入 - LangChain 1.0+ 路径
 try:
     from langchain.retrievers import ContextualCompressionRetriever
-    from langchain.retrievers.document_compressors import CohereRerank
-    COHERE_RERANK_AVAILABLE = True
 except ImportError:
     try:
         from langchain.retrievers.contextual_compression import ContextualCompressionRetriever
-        from langchain.retrievers.document_compressors.cohere_rerank import CohereRerank
-        COHERE_RERANK_AVAILABLE = True
     except ImportError:
         try:
             from langchain_community.retrievers import ContextualCompressionRetriever
-            from langchain_cohere import CohereRerank
-            COHERE_RERANK_AVAILABLE = True
         except ImportError:
             ContextualCompressionRetriever = None
-            CohereRerank = None
-            COHERE_RERANK_AVAILABLE = False
-
-try:
-    import cohere
-    COHERE_SDK_AVAILABLE = True
-except ImportError:
-    cohere = None
-    COHERE_SDK_AVAILABLE = False
 
 try:
     from FlagEmbedding import FlagReranker
@@ -90,14 +83,13 @@ class IntelligentRAG:
     5. 基于检索结果的问答生成
     
     支持的后端：
-    - LLM: Ollama、硅基流动、OpenAI
-    - 嵌入模型: Ollama、硅基流动、OpenAI
-    - 重排序: Ollama Reranker、本地 Qwen Reranker、Cohere API
+    - LLM: Ollama、硅基流动、魔搭 ModelScope
+    - 嵌入模型: Ollama、硅基流动、魔搭 ModelScope
+    - 重排序: Ollama Reranker、本地 Qwen Reranker
     
     重排序优先级：
     1. Ollama Reranker（如果设置了 ollama_reranker_model）
     2. 本地 Reranker（如果设置了 reranker_model_path）
-    3. Cohere API（如果设置了 COHERE_API_KEY）
     
     示例：
         >>> rag = IntelligentRAG(
@@ -187,73 +179,6 @@ class IntelligentRAG:
         documents = loader.load()
         print(f"已加载 {len(documents)} 个文档")
         return documents
-    
-    def _create_manual_rerank_retriever(self, base_retriever, cohere_api_key: str, top_n: int):
-        """
-        创建使用 Cohere SDK 手动实现的重排序检索器包装器
-        
-        当 LangChain 的 CohereRerank 不可用时，使用 Cohere SDK 手动实现重排序。
-        
-        Args:
-            base_retriever: 基础检索器
-            cohere_api_key: Cohere API Key
-            top_n: 重排序后保留的文档数量
-            
-        Returns:
-            BaseRetriever: 包装后的检索器，会自动进行重排序
-        """
-        from langchain_core.retrievers import BaseRetriever
-        from langchain_core.documents import Document
-        
-        class RerankRetriever(BaseRetriever):
-            """使用 Cohere SDK 手动实现的 Reranker 检索器包装器"""
-            
-            def __init__(self, base_retriever, cohere_client, top_n):
-                # 在 LangChain 1.0+ 中，BaseRetriever 使用 Pydantic 模型
-                # 我们需要使用 object.__setattr__ 绕过 Pydantic 验证
-                super().__init__()
-                object.__setattr__(self, 'base_retriever', base_retriever)
-                object.__setattr__(self, 'cohere_client', cohere_client)
-                object.__setattr__(self, 'top_n', top_n)
-            
-            def _get_relevant_documents(self, query: str) -> List[Document]:
-                # 从基础检索器获取文档
-                # LangChain 1.0+ 使用 invoke() 方法
-                try:
-                    docs = self.base_retriever.invoke(query)
-                except AttributeError:
-                    # 兼容旧版本 API
-                    try:
-                        docs = self.base_retriever.get_relevant_documents(query)
-                    except AttributeError:
-                        # 如果都不行，尝试直接调用
-                        docs = self.base_retriever(query)
-                
-                if len(docs) <= self.top_n:
-                    return docs
-                
-                # 使用 Cohere 重排序
-                try:
-                    documents = [doc.page_content for doc in docs]
-                    results = self.cohere_client.rerank(
-                        model="rerank-multilingual-v3.0",
-                        query=query,
-                        documents=documents,
-                        top_n=self.top_n
-                    )
-                    
-                    # 根据重排序结果重新组织文档
-                    reranked_docs = []
-                    for result in results.results:
-                        reranked_docs.append(docs[result.index])
-                    
-                    return reranked_docs
-                except Exception as e:
-                    print(f"重排序失败: {e}，返回原始结果")
-                    return docs[:self.top_n]
-        
-        cohere_client = cohere.Client(api_key=cohere_api_key)
-        return RerankRetriever(base_retriever, cohere_client, top_n)
     
     def _create_ollama_rerank_retriever(self, base_retriever, top_n: int):
         """
@@ -501,7 +426,10 @@ class IntelligentRAG:
             后端选择优先级：
             1. Ollama（如果 USE_OLLAMA=true）
             2. 硅基流动（如果设置了 SILICONFLOW_API_KEY）
-            3. OpenAI（默认）
+            3. 魔搭 ModelScope（如果设置了 USE_MODELSCOPE=true）
+            
+        Raises:
+            ValueError: 如果未配置任何可用的后端
             
         Raises:
             ValueError: 如果文档列表为空
@@ -509,6 +437,7 @@ class IntelligentRAG:
         # 从环境变量获取配置
         ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
         use_ollama = os.getenv("USE_OLLAMA", "false").lower() == "true"
+        use_modelscope = os.getenv("USE_MODELSCOPE", "false").lower() == "true"
         siliconflow_api_key = os.getenv("SILICONFLOW_API_KEY")
         siliconflow_base_url = os.getenv("SILICONFLOW_BASE_URL")
         
@@ -528,10 +457,23 @@ class IntelligentRAG:
                 openai_api_base=siliconflow_base_url,
             )
             print("使用硅基流动 API 创建嵌入模型")
+        elif use_modelscope and MODELSCOPE_AVAILABLE:
+            # 使用魔搭 ModelScope 嵌入模型
+            # embedding_model 应该是 ModelScope 模型路径，如 "damo/nlp_gte_sentence-embedding_chinese-base"
+            self.embeddings = HuggingFaceEmbeddings(
+                model_name=self.embedding_model,
+                model_kwargs={"device": "cpu"},  # 可以根据需要改为 "cuda"
+                encode_kwargs={"normalize_embeddings": True}
+            )
+            print(f"使用魔搭 ModelScope 创建嵌入模型 (模型: {self.embedding_model})")
         else:
-            # 使用默认 OpenAI API
-            self.embeddings = OpenAIEmbeddings(model=self.embedding_model)
-            print("使用 OpenAI API 创建嵌入模型")
+            if use_modelscope and not MODELSCOPE_AVAILABLE:
+                raise ValueError(
+                    "ModelScope 支持不可用。请安装: pip install transformers langchain-community"
+                )
+            raise ValueError(
+                "未找到可用的嵌入模型配置。请设置 USE_OLLAMA=true、USE_MODELSCOPE=true 或提供 SILICONFLOW_API_KEY 和 SILICONFLOW_BASE_URL"
+            )
         
         # 创建向量存储
         self.vectorstore = FAISS.from_documents(documents, self.embeddings)
@@ -552,6 +494,7 @@ class IntelligentRAG:
         # 从环境变量获取配置
         ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
         use_ollama = os.getenv("USE_OLLAMA", "false").lower() == "true"
+        use_modelscope = os.getenv("USE_MODELSCOPE", "false").lower() == "true"
         siliconflow_api_key = os.getenv("SILICONFLOW_API_KEY")
         siliconflow_base_url = os.getenv("SILICONFLOW_BASE_URL")
         
@@ -573,10 +516,52 @@ class IntelligentRAG:
                 openai_api_base=siliconflow_base_url,
             )
             print("使用硅基流动 API 创建 LLM")
+        elif use_modelscope and MODELSCOPE_AVAILABLE:
+            # 使用魔搭 ModelScope LLM
+            # llm_model 应该是 ModelScope 模型路径，如 "qwen/Qwen-7B-Chat"
+            try:
+                from langchain_community.llms import HuggingFacePipeline
+                from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+                
+                print(f"正在加载魔搭 ModelScope LLM (模型: {self.llm_model})...")
+                tokenizer = AutoTokenizer.from_pretrained(
+                    self.llm_model,
+                    trust_remote_code=True
+                )
+                model = AutoModelForCausalLM.from_pretrained(
+                    self.llm_model,
+                    trust_remote_code=True,
+                    device_map="auto",  # 自动分配设备
+                    torch_dtype="auto"
+                )
+                
+                pipe = pipeline(
+                    "text-generation",
+                    model=model,
+                    tokenizer=tokenizer,
+                    max_new_tokens=512,
+                    temperature=0,
+                    do_sample=False
+                )
+                
+                llm = HuggingFacePipeline(pipeline=pipe)
+                print(f"魔搭 ModelScope LLM 加载完成 (模型: {self.llm_model})")
+            except ImportError as e:
+                raise ValueError(
+                    f"ModelScope LLM 支持不可用。请安装: pip install transformers langchain-community"
+                )
+            except Exception as e:
+                raise ValueError(
+                    f"加载魔搭 ModelScope LLM 失败: {e}。请确保模型路径正确且已安装 transformers。"
+                )
         else:
-            # 使用默认 OpenAI API
-            llm = ChatOpenAI(model=self.llm_model, temperature=0)
-            print("使用 OpenAI API 创建 LLM")
+            if use_modelscope and not MODELSCOPE_AVAILABLE:
+                raise ValueError(
+                    "ModelScope 支持不可用。请安装: pip install transformers langchain-community"
+                )
+            raise ValueError(
+                "未找到可用的 LLM 配置。请设置 USE_OLLAMA=true、USE_MODELSCOPE=true 或提供 SILICONFLOW_API_KEY 和 SILICONFLOW_BASE_URL"
+            )
         
         # 创建基础检索器
         # 如果启用重排序，检索 k*2 个文档以便重排序后选择最佳的 top_n 个
@@ -587,7 +572,7 @@ class IntelligentRAG:
         )
         
         # 如果启用重排序，创建带重排序的检索器
-        # 重排序优先级：Ollama Reranker > 本地 Reranker > Cohere API
+        # 重排序优先级：Ollama Reranker > 本地 Reranker
         if use_rerank:
             retriever = None
             
@@ -612,46 +597,13 @@ class IntelligentRAG:
                     )
                     print(f"已启用本地 Reranker 重排序 (模型: {self.reranker_model_path}, 保留前 {rerank_top_n} 个文档)")
                 except Exception as e:
-                    print(f"本地 Reranker 初始化失败: {e}，尝试使用 Cohere API")
-                    retriever = None
-            
-            # 优先级3: 使用 Cohere API（如果本地 Reranker 不可用或失败）
-            # 优点：云端服务，无需本地模型，支持多语言
-            if retriever is None:
-                cohere_api_key = os.getenv("COHERE_API_KEY")
-                if cohere_api_key and COHERE_RERANK_AVAILABLE:
-                    try:
-                        # 使用 LangChain 的 CohereRerank
-                        compressor = CohereRerank(
-                            cohere_api_key=cohere_api_key,
-                            top_n=rerank_top_n,
-                            model="rerank-multilingual-v3.0"  # 支持中文
-                        )
-                        retriever = ContextualCompressionRetriever(
-                            base_compressor=compressor,
-                            base_retriever=base_retriever
-                        )
-                        print(f"已启用 Cohere 重排序 (保留前 {rerank_top_n} 个文档)")
-                    except Exception as e:
-                        print(f"初始化 Cohere Rerank 失败: {e}，使用基础检索器")
-                        retriever = base_retriever
-                elif cohere_api_key and COHERE_SDK_AVAILABLE:
-                    # 使用 Cohere SDK 手动实现重排序
-                    try:
-                        retriever = self._create_manual_rerank_retriever(
-                            base_retriever, cohere_api_key, rerank_top_n
-                        )
-                        print(f"已启用 Cohere 重排序 (手动实现，保留前 {rerank_top_n} 个文档)")
-                    except Exception as e:
-                        print(f"Cohere SDK 重排序失败: {e}，使用基础检索器")
-                        retriever = base_retriever
-                else:
-                    # 如果没有 Cohere API Key 或相关库，使用基础检索器
+                    print(f"本地 Reranker 初始化失败: {e}，跳过重排序")
                     retriever = base_retriever
-                    if not cohere_api_key:
-                        print("未设置 COHERE_API_KEY 且未配置本地/Ollama Reranker，跳过重排序")
-                    else:
-                        print("Cohere 相关库未安装，跳过重排序。请安装: pip install cohere langchain-cohere")
+            
+            # 如果两种重排序方式都不可用，使用基础检索器
+            if retriever is None:
+                retriever = base_retriever
+                print("未配置本地/Ollama Reranker，跳过重排序")
         else:
             retriever = base_retriever
             print("未启用重排序")
@@ -880,8 +832,16 @@ class IntelligentRAG:
                     openai_api_key=siliconflow_api_key,
                     openai_api_base=siliconflow_base_url,
                 )
+            elif use_modelscope and MODELSCOPE_AVAILABLE:
+                # 使用魔搭 ModelScope 嵌入模型
+                self.embeddings = HuggingFaceEmbeddings(
+                    model_name=self.embedding_model,
+                    model_kwargs={"device": "cpu"},
+                    encode_kwargs={"normalize_embeddings": True}
+                )
             else:
-                # 使用默认 OpenAI API
-                self.embeddings = OpenAIEmbeddings(model=self.embedding_model)
+                raise ValueError(
+                    "未找到可用的嵌入模型配置。请设置 USE_OLLAMA=true、USE_MODELSCOPE=true 或提供 SILICONFLOW_API_KEY 和 SILICONFLOW_BASE_URL"
+                )
         self.vectorstore = FAISS.load_local(path, self.embeddings, allow_dangerous_deserialization=True)
         print(f"向量存储已从 {path} 加载")

@@ -1,8 +1,11 @@
 """
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 智能体系统使用示例
 """
 
-from agent_system import IntelligentAgent
+from agents.agent_system import IntelligentAgent
 
 
 def main():

@@ -9,8 +9,7 @@
 - 🎯 **重排序（Reranking）**：支持多种方式提高检索精度
   - Ollama Reranker（推荐，本地运行）
   - 本地 Qwen Reranker（完全离线）
-  - Cohere API（云端服务）
-- 🤖 支持多种 LLM：Ollama、硅基流动、OpenAI
+- 🤖 支持多种 LLM：Ollama、硅基流动、魔搭 ModelScope
 
 ## 安装依赖
 
@@ -32,7 +31,7 @@ pip install -e .
 |---------|---------|------|
 | **Ollama（推荐）** | `USE_OLLAMA=true` | 本地运行，无需 API Key |
 | 硅基流动 API | `SILICONFLOW_API_KEY`<br>`SILICONFLOW_BASE_URL` | 需要 API Key |
-| OpenAI API | `OPENAI_API_KEY` | 需要 API Key |
+| 魔搭 ModelScope | `USE_MODELSCOPE=true` | 本地模型，需要下载模型 |
 
 ### 使用 Ollama（推荐）
 
@@ -59,17 +58,16 @@ export USE_OLLAMA="true"
 export SILICONFLOW_API_KEY="your-api-key"
 export SILICONFLOW_BASE_URL="https://api.siliconflow.cn/v1/"
 
-# 或 OpenAI
-export OPENAI_API_KEY="your-api-key"
+# 或魔搭 ModelScope（本地模型）
+export USE_MODELSCOPE="true"
 ```
 
 ### 重排序配置
 
-重排序优先级：**Ollama Reranker > 本地 Reranker > Cohere API**
+重排序优先级：**Ollama Reranker > 本地 Reranker**
 
 - **Ollama Reranker**（推荐）：如果使用 Ollama，在代码中设置 `ollama_reranker_model` 参数即可
 - **本地 Reranker**：需要下载模型，详见 [Reranker 部署指南](DEPLOY_RERANKER.md)
-- **Cohere API**：设置 `COHERE_API_KEY` 环境变量
 
 ## 快速开始
 
@@ -90,10 +88,14 @@ cd /home/lab/Projects/hylreg_LLM
 
 # 使用 Ollama（推荐）
 export USE_OLLAMA="true"
-uv run python RAG/example_ollama.py
+uv run python examples/rag/example_ollama.py
 
 # 或使用其他 API
-uv run python RAG/example.py
+uv run python examples/rag/example.py
+
+# 使用魔搭 ModelScope
+export USE_MODELSCOPE="true"
+uv run python examples/rag/example_modelscope.py
 ```
 
 ## 使用方法
@@ -102,7 +104,7 @@ uv run python RAG/example.py
 
 **使用 Ollama**：
 ```python
-from rag_system import IntelligentRAG
+from RAG.rag_system import IntelligentRAG
 
 # 初始化 RAG 系统
 rag = IntelligentRAG(
@@ -122,7 +124,7 @@ print(result["answer"])
 
 **使用 API 服务**：
 ```python
-from rag_system import IntelligentRAG
+from RAG.rag_system import IntelligentRAG
 
 # 初始化 RAG 系统（需要先设置相应的环境变量）
 rag = IntelligentRAG(
@@ -131,7 +133,31 @@ rag = IntelligentRAG(
     llm_model="qwen3:0.6b",
 )
 
-# 构建系统（启用重排序，需要设置 COHERE_API_KEY）
+# 构建系统（启用重排序，需要配置 Ollama 或本地 Reranker）
+rag.build(k=4, use_rerank=True, rerank_top_n=3)
+
+# 查询
+result = rag.query("你的问题")
+print(result["answer"])
+```
+
+**使用魔搭 ModelScope**：
+```python
+from RAG.rag_system import IntelligentRAG
+import os
+
+# 设置使用 ModelScope
+os.environ["USE_MODELSCOPE"] = "true"
+
+# 初始化 RAG 系统
+# embedding_model 和 llm_model 应该是 ModelScope 模型路径
+rag = IntelligentRAG(
+    documents_path="./documents",
+    embedding_model="damo/nlp_gte_sentence-embedding_chinese-base",  # ModelScope 嵌入模型
+    llm_model="qwen/Qwen-7B-Chat",  # ModelScope LLM 模型
+)
+
+# 构建系统
 rag.build(k=4, use_rerank=True, rerank_top_n=3)
 
 # 查询
@@ -166,10 +192,14 @@ print(result["answer"])
 ## 文件说明
 
 - `rag_system.py`: RAG 系统核心实现
+所有示例代码位于 `examples/rag/` 目录：
 - `example.py`: 使用示例（默认配置）
 - `example_ollama.py`: Ollama 专用示例
+- `example_modelscope.py`: 魔搭 ModelScope 示例
 - `example_local_reranker.py`: 本地 Reranker 示例
 - `example_ollama_reranker.py`: Ollama Reranker 示例
+- `example_modelscope_reranker.py`: ModelScope Reranker 示例
+- `benchmark.py`: 性能测试脚本
 - `documents/`: 文档目录
 - `DEPLOY_RERANKER.md`: 本地 Reranker 部署指南
 
@@ -179,8 +209,10 @@ print(result["answer"])
 
 ```bash
 # 错误：uv run example.py
-# 正确：uv run python example.py
-# 或：uv run -m RAG.example
+# 正确：uv run python examples/rag/example.py
+# 或：从项目根目录运行
+cd /home/lab/Projects/hylreg_LLM
+uv run python examples/rag/example.py
 ```
 
 ### 2. Ollama 连接失败
@@ -222,19 +254,21 @@ uv run python -c "import langchain; print('✓ LangChain 导入成功')"
 
 ```bash
 # 检查环境变量是否正确设置
-env | grep -E "(SILICONFLOW|OPENAI|COHERE|OLLAMA)"
+env | grep -E "(SILICONFLOW|OLLAMA)"
 ```
 
 ## 注意事项
 
 - **Ollama**: 需要先安装并运行 Ollama 服务，下载相应的模型
-- **API Key**: 使用硅基流动或 OpenAI 时需要有效的 API Key
+- **API Key**: 使用硅基流动时需要有效的 API Key
 - **重排序**: 如果使用 Ollama，推荐使用 Ollama Reranker（无需 API Key）
 - 首次运行会创建向量存储，可能需要一些时间
-- 系统会自动检测环境变量，优先级：Ollama > 硅基流动 > OpenAI
+- 系统会自动检测环境变量，优先级：Ollama > 硅基流动 > 魔搭 ModelScope
 - 如果遇到问题，查看控制台输出的错误信息，系统会显示使用的 API 和模型信息
 
 ## 更多文档
 
-- [本地 Reranker 部署指南](DEPLOY_RERANKER.md) - 使用本地 Qwen Reranker 的详细说明
+- [本地 Reranker 部署指南](../docs/rag/DEPLOY_RERANKER.md) - 使用本地 Qwen Reranker 的详细说明
+- [性能测试文档](../docs/rag/BENCHMARK.md) - RAG 系统性能测试指南
+- [向量存储指南](../docs/rag/VECTOR_STORE.md) - 向量存储使用说明
 - [项目主文档](../README.md) - 项目概览和快速开始

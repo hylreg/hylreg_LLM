@@ -7,3 +7,5 @@ alwaysApply: true
 - 使用 ollama  siliconflow modelscope 的 api 接口，不要使用其他的 api 接口
 - 优先使用 Qwen3 系列的模型  
 - api_key 在 ～/.zshrc 中通过环境变量获取
+- demo 的实现先完成技术方案文档
+- 模型默认使用最小参数的模型

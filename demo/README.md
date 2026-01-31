@@ -12,6 +12,12 @@ demo/
 │   ├── run_voice_assistant.py
 │   └── voice_assistant/   # 实现包
 │       └── ...
+├── vl_demo/               # 子项目：视觉语言 Demo
+│   ├── README.md
+│   ├── 视觉语言Demo方案.md
+│   ├── run_vl_demo.py
+│   └── vl_demo/           # 实现包
+│       └── ...
 └── <其他子项目>/          # 后续可继续添加
     ├── README.md
     ├── run_*.py
@@ -27,6 +33,7 @@ demo/
 | 项目 | 说明 | 运行 |
 |------|------|------|
 | [voice_assistant](./voice_assistant/) | 语音助手（ASR → LLM → TTS，当前为文本模式） | `uv run python demo/voice_assistant/run_voice_assistant.py` |
+| [vl_demo](./vl_demo/) | 视觉语言 Demo（图片 + 问题 → VL 模型 → 文本回复） | `uv run python demo/vl_demo/run_vl_demo.py --image <图片路径>` |
 
 ## 添加新项目
 

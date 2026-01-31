@@ -31,11 +31,11 @@ vectorstore/
 ### 向量存储位置示例
 
 根据示例代码，向量存储默认保存在：
-- `RAG/vectorstore/` - 相对于示例脚本的目录
+- `demo/RAG/vectorstore/` - 相对于示例脚本的目录
 
 你可以通过以下方式查看：
 ```bash
-ls -la RAG/vectorstore/
+ls -la demo/RAG/vectorstore/
 ```
 
 ## 是否需要额外的向量数据库？

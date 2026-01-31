@@ -21,17 +21,16 @@ voice_assistant/           # 本子项目目录
 
 ## 运行方式（文本模式）
 
-在**项目根目录**执行：
+**推荐**：在**本目录**下执行：
 
 ```bash
-uv run python demo/voice_assistant/run_voice_assistant.py
-```
-
-或进入本目录后（需保证项目根在 `PYTHONPATH` 或由脚本添加）：
-
-```bash
+uv sync
 uv run python run_voice_assistant.py
+# 或
+uv run voice-assistant
 ```
+
+若在仓库根目录：`uv sync` 后执行 `uv run --package voice-assistant voice-assistant`。
 
 按提示输入一句话回车，助手会调用 LLM 并打印回复；输入空行退出。
 

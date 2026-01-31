@@ -6,10 +6,10 @@
 
 ### 快速开始
 - [项目主 README](../README.md) - 项目概览和快速入门指南
-- [RAG 系统文档](../RAG/README.md) - RAG 系统的详细使用说明
+- [RAG 系统文档](../demo/RAG/README.md) - RAG 系统的详细使用说明
 
 ### RAG 系统文档
-- [RAG 系统使用指南](../RAG/README.md) - RAG 系统完整使用说明
+- [RAG 系统使用指南](../demo/RAG/README.md) - RAG 系统完整使用说明
 - [Reranker 部署指南](rag/DEPLOY_RERANKER.md) - 本地 Qwen Reranker 部署说明
 - [性能测试文档](rag/BENCHMARK.md) - RAG 系统性能测试指南
 - [向量存储指南](rag/VECTOR_STORE.md) - 向量存储使用说明
@@ -39,7 +39,7 @@ hylreg_LLM/
 │   │   └── VECTOR_STORE.md
 │   ├── 魔搭模型下载指南.md
 │   └── ...
-├── RAG/                         # RAG 系统核心代码
+├── demo/RAG/                    # RAG 系统核心代码
 │   └── README.md               # RAG 系统详细文档
 └── examples/                    # 示例代码目录
     ├── rag/                    # RAG 示例
@@ -51,7 +51,7 @@ hylreg_LLM/
 根据您的需求，可以查看以下文档：
 
 - **想要快速开始？** → 查看 [项目主 README](../README.md)
-- **需要了解 RAG 系统？** → 查看 [RAG 系统文档](../RAG/README.md)
+- **需要了解 RAG 系统？** → 查看 [RAG 系统文档](../demo/RAG/README.md)
 - **需要部署本地 Reranker？** → 查看 [Reranker 部署指南](rag/DEPLOY_RERANKER.md)
 - **需要代码示例？** → 查看 [examples 目录](../examples/)
 - **需要下载模型？** → 查看 [魔搭模型下载指南](魔搭模型下载指南.md)

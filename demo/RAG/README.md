@@ -76,8 +76,9 @@ export USE_MODELSCOPE="true"
 将文档放在 `documents/` 目录下（支持 `.txt` 文件）：
 
 ```bash
-mkdir -p RAG/documents
-cp your_document.txt RAG/documents/
+# 在仓库根目录下
+mkdir -p demo/RAG/documents
+cp your_document.txt demo/RAG/documents/
 ```
 
 ### 2. 运行示例
@@ -104,7 +105,7 @@ uv run python examples/rag/example_modelscope.py
 
 **使用 Ollama**：
 ```python
-from RAG.rag_system import IntelligentRAG
+from demo.RAG.rag_system import IntelligentRAG
 
 # 初始化 RAG 系统
 rag = IntelligentRAG(
@@ -124,7 +125,7 @@ print(result["answer"])
 
 **使用 API 服务**：
 ```python
-from RAG.rag_system import IntelligentRAG
+from demo.RAG.rag_system import IntelligentRAG
 
 # 初始化 RAG 系统（需要先设置相应的环境变量）
 rag = IntelligentRAG(
@@ -143,7 +144,7 @@ print(result["answer"])
 
 **使用魔搭 ModelScope**：
 ```python
-from RAG.rag_system import IntelligentRAG
+from demo.RAG.rag_system import IntelligentRAG
 import os
 
 # 设置使用 ModelScope

@@ -21,7 +21,7 @@ from pathlib import Path
 # 添加项目根目录到路径
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from RAG.rag_system import IntelligentRAG
+from demo.RAG.rag_system import IntelligentRAG
 
 
 def main():
@@ -30,7 +30,7 @@ def main():
     
     # 获取项目根目录
     project_root = Path(__file__).parent.parent.parent
-    documents_path = project_root / "RAG" / "documents"
+    documents_path = project_root / "demo" / "RAG" / "documents"
     
     # 初始化 RAG 系统
     # embedding_model 和 llm_model 应该是 ModelScope 模型路径
@@ -49,7 +49,7 @@ def main():
     # k: 初始检索的文档块数量（重排序前会检索 k*2 个文档）
     # use_rerank: 是否启用重排序（需要配置本地 Reranker）
     # rerank_top_n: 重排序后保留的文档数量
-    vectorstore_path = project_root / "RAG" / "vectorstore"
+    vectorstore_path = project_root / "demo" / "RAG" / "vectorstore"
     rag.build(
         k=4, 
         use_rerank=False,  # ModelScope 模式下可以配置本地 Reranker

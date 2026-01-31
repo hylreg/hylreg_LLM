@@ -21,17 +21,16 @@ def fix_imports_in_file(file_path):
         content
     )
     
-    # 确保有正确的导入语句（在文档字符串之后）
-    if 'from RAG.rag_system import' in content or 'from agents.agent_system import' in content:
-        # 检查是否已经有 sys.path.insert
-        if 'sys.path.insert(0' not in content:
-            # 找到第一个 import 语句的位置
-            import_match = re.search(r'(import os|from pathlib)', content)
-            if import_match:
-                insert_pos = import_match.start()
-                # 在第一个 import 之前插入路径设置
-                path_setup = 'import sys\nfrom pathlib import Path\n\n# 添加项目根目录到路径\nsys.path.insert(0, str(Path(__file__).parent.parent.parent))\n\n'
-                content = content[:insert_pos] + path_setup + content[insert_pos:]
+    # 将旧导入改为 demo 包路径
+    content = content.replace('from RAG.rag_system import', 'from demo.RAG.rag_system import')
+    content = content.replace('from agents.agent_system import', 'from demo.agents.agent_system import')
+    # 确保有项目根目录到路径（供 demo 包导入）
+    if ('from demo.RAG.rag_system import' in content or 'from demo.agents.agent_system import' in content) and 'sys.path.insert(0' not in content:
+        import_match = re.search(r'(import os|from pathlib)', content)
+        if import_match:
+            insert_pos = import_match.start()
+            path_setup = 'import sys\nfrom pathlib import Path\n\n# 添加项目根目录到路径\nsys.path.insert(0, str(Path(__file__).parent.parent.parent))\n\n'
+            content = content[:insert_pos] + path_setup + content[insert_pos:]
     
     # 修复路径引用（documents 和 vectorstore）
     project_root_pattern = r'project_root = Path\(__file__\)\.parent\.parent\.parent'
@@ -48,13 +47,13 @@ def fix_imports_in_file(file_path):
             # 更新 documents_path
             content = re.sub(
                 r'documents_path = (script_dir|project_root) / "documents"',
-                'documents_path = project_root / "RAG" / "documents"',
+                'documents_path = project_root / "demo" / "RAG" / "documents"',
                 content
             )
             # 更新 vectorstore_path
             content = re.sub(
                 r'vectorstore_path = (script_dir|project_root) / "vectorstore"',
-                'vectorstore_path = project_root / "RAG" / "vectorstore"',
+                'vectorstore_path = project_root / "demo" / "RAG" / "vectorstore"',
                 content
             )
     

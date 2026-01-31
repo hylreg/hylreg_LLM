@@ -18,7 +18,7 @@
 **使用方法**：
 
 ```python
-from RAG.rag_system import IntelligentRAG
+from demo.RAG.rag_system import IntelligentRAG
 
 rag = IntelligentRAG(
     documents_path="./documents",
@@ -55,7 +55,7 @@ ollama pull dengcao/Qwen3-Reranker-0.6B:Q8_0
 ```
 
 ```python
-from RAG.rag_system import IntelligentRAG
+from demo.RAG.rag_system import IntelligentRAG
 
 rag = IntelligentRAG(
     documents_path="./documents",
@@ -127,7 +127,7 @@ ollama create qwen3-reranker-0.6b -f Modelfile
 6. **使用模型**：
 
 ```python
-from RAG.rag_system import IntelligentRAG
+from demo.RAG.rag_system import IntelligentRAG
 
 rag = IntelligentRAG(
     documents_path="./documents",

@@ -5,9 +5,9 @@
 
 from typing import Optional
 
-# 从项目根 agents 包导入
+# 从 demo.agents 包导入
 try:
-    from agents.agent_system import IntelligentAgent
+    from demo.agents.agent_system import IntelligentAgent
 except ImportError:
     import sys
     from pathlib import Path
@@ -15,7 +15,7 @@ except ImportError:
     root = Path(__file__).resolve().parents[3]
     if str(root) not in sys.path:
         sys.path.insert(0, str(root))
-    from agents.agent_system import IntelligentAgent
+    from demo.agents.agent_system import IntelligentAgent
 
 
 # 语音助手专用系统提示

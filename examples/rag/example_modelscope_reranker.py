@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import os
 from pathlib import Path
-from RAG.rag_system import IntelligentRAG
+from demo.RAG.rag_system import IntelligentRAG
 
 
 def main():
@@ -27,7 +27,7 @@ def main():
     
     # 获取项目根目录
     project_root = Path(__file__).parent.parent.parent
-    documents_path = project_root / "RAG" / "documents"
+    documents_path = project_root / "demo" / "RAG" / "documents"
     
     # ModelScope 下载的模型路径
     modelscope_model_path = "/home/lab/.cache/modelscope/hub/models/Qwen/Qwen3-Reranker-0.6B"

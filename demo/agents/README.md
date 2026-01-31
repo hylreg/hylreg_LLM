@@ -73,7 +73,7 @@ uv run python examples/agents/example.py
 ### 基本使用
 
 ```python
-from agents.agent_system import IntelligentAgent
+from demo.agents.agent_system import IntelligentAgent
 
 # 初始化智能体
 agent = IntelligentAgent(

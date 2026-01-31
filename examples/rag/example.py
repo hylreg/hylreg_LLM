@@ -17,7 +17,7 @@ from pathlib import Path
 # 添加项目根目录到路径
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from RAG.rag_system import IntelligentRAG
+from demo.RAG.rag_system import IntelligentRAG
 
 
 def main():
@@ -42,7 +42,7 @@ def main():
     
     # 获取项目根目录
     project_root = Path(__file__).parent.parent.parent
-    documents_path = project_root / "RAG" / "documents"
+    documents_path = project_root / "demo" / "RAG" / "documents"
     
     # 初始化 RAG 系统
     # 如果使用 Ollama，需要设置相应的模型名称，例如：
@@ -66,7 +66,7 @@ def main():
     # rerank_top_n: 重排序后保留的文档数量
     # vectorstore_path: 向量存储保存路径（如果路径存在会自动加载，避免重复处理文档）
     # force_rebuild: 是否强制重新构建（默认 False，如果向量存储存在则直接加载）
-    vectorstore_path = project_root / "RAG" / "vectorstore"
+    vectorstore_path = project_root / "demo" / "RAG" / "vectorstore"
     rag.build(
         k=4, 
         use_rerank=True, 

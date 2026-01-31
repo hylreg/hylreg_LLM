@@ -10,5 +10,5 @@
 
 ## 相关文档
 
-- [RAG 系统使用指南](../../RAG/README.md) - RAG 系统完整使用说明
+- [RAG 系统使用指南](../../demo/RAG/README.md) - RAG 系统完整使用说明
 - [项目主文档](../../README.md) - 项目概览

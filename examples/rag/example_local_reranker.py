@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import os
 from pathlib import Path
-from RAG.rag_system import IntelligentRAG
+from demo.RAG.rag_system import IntelligentRAG
 
 
 def main():
@@ -29,7 +29,7 @@ def main():
     
     # 获取项目根目录
     project_root = Path(__file__).parent.parent.parent
-    documents_path = project_root / "RAG" / "documents"
+    documents_path = project_root / "demo" / "RAG" / "documents"
     
     # 初始化 RAG 系统（使用 Ollama 模型 + 本地 Reranker）
     # 注意：

@@ -4,17 +4,22 @@
 
 ## 运行方式
 
-在**项目根目录**执行：
+**推荐**：在**本目录**下执行：
 
 ```bash
-uv run python demo/vl_demo/run_vl_demo.py --image /path/to/image.jpg
+uv sync
+uv run python run_vl_demo.py --image /path/to/image.jpg
+# 或
+uv run vl-demo --image /path/to/image.jpg
 ```
 
 带自定义问题：
 
 ```bash
-uv run python demo/vl_demo/run_vl_demo.py --image /path/to/image.jpg --question "图中有什么文字？"
+uv run vl-demo --image /path/to/image.jpg --question "图中有什么文字？"
 ```
+
+若在仓库根目录：`uv sync` 后执行 `uv run --package vl-demo vl-demo --image /path/to/image.jpg`。
 
 ## 环境变量
 

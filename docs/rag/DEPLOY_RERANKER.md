@@ -32,7 +32,7 @@ pip install FlagEmbedding torch
 ### 方式1：在代码中指定 Reranker 路径
 
 ```python
-from RAG.rag_system import IntelligentRAG
+from demo.RAG.rag_system import IntelligentRAG
 
 rag = IntelligentRAG(
     documents_path="./documents",

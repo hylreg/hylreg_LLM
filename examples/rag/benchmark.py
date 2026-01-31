@@ -18,7 +18,7 @@ RAG 系统性能测试脚本
     uv run python benchmark.py
     
     # 或从项目根目录运行
-    uv run python RAG/benchmark.py
+    uv run python examples/rag/benchmark.py
     
     # 使用传统 Python
     python benchmark.py
@@ -35,7 +35,7 @@ import json
 from pathlib import Path
 from typing import Dict, List, Optional
 from datetime import datetime
-from RAG.rag_system import IntelligentRAG
+from demo.RAG.rag_system import IntelligentRAG
 
 # 尝试导入 psutil，如果不可用则使用简化版本
 try:
@@ -326,8 +326,8 @@ def main():
     
     # 获取项目根目录
     project_root = Path(__file__).parent.parent.parent
-    documents_path = project_root / "RAG" / "documents"
-    vectorstore_path = project_root / "RAG" / "vectorstore"
+    documents_path = project_root / "demo" / "RAG" / "documents"
+    vectorstore_path = project_root / "demo" / "RAG" / "vectorstore"
     
     # 初始化 RAG 系统
     print("初始化 RAG 系统...")

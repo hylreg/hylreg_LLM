@@ -2,6 +2,17 @@
 
 一个基于 LangChain 的简单 RAG (Retrieval-Augmented Generation) 系统，支持多种 LLM 和嵌入模型。
 
+本仓库为 **demo** 工作区，内含多个子项目。使用 [uv](https://docs.astral.sh/uv/) 管理依赖与工作区（与 hylreg_QT、hylreg_OpenCV 一致）。
+
+## 子项目
+
+| 路径 | 说明 |
+|------|------|
+| [demo/vl_demo](demo/vl_demo/) | 视觉语言 Demo：图片 + 问题 → VL 模型回复 |
+| [demo/voice_assistant](demo/voice_assistant/) | 语音助手 Demo（当前为文本模式） |
+| [demo/agents](demo/agents/) | 智能体系统：LangChain Agent 封装 |
+| [demo/RAG](demo/RAG/) | RAG 系统：文档检索与生成 |
+
 ## ✨ 功能特性
 
 - 📄 **文档加载和预处理**：支持文本文档的自动加载和分割
@@ -19,12 +30,30 @@
 
 ### 1. 安装依赖
 
-```bash
-# 使用 uv 安装（推荐）
-uv sync
+**推荐**：进入子项目目录后再安装与运行。
 
-# 或使用 pip
-pip install -e .
+```bash
+# 进入子项目（例如 vl_demo）
+cd demo/vl_demo
+uv sync
+uv run python run_vl_demo.py --image /path/to/image.jpg
+# 或
+uv run vl-demo --image /path/to/image.jpg
+```
+
+若在仓库根目录操作，可先同步工作区依赖，再指定包运行：
+
+```bash
+uv sync
+uv run --package vl-demo vl-demo --image /path/to/image.jpg
+uv run --package voice-assistant voice-assistant
+```
+
+各子项目详细说明见其目录下的 `README.md`。运行 **RAG / examples** 示例时，在根目录执行 `uv sync` 后使用：
+
+```bash
+uv run python examples/rag/example_ollama.py
+uv run python examples/rag/benchmark.py
 ```
 
 ### 2. 配置环境
@@ -57,7 +86,7 @@ export USE_MODELSCOPE="true"
 
 ### 3. 准备文档
 
-将文档放在 `RAG/documents/` 目录下（支持 `.txt` 文件）。
+将文档放在 `demo/RAG/documents/` 目录下（支持 `.txt` 文件）。
 
 ### 4. 运行示例
 
@@ -76,7 +105,7 @@ uv run python examples/rag/example_modelscope.py
 
 ## 📚 文档
 
-- [RAG 系统详细文档](RAG/README.md) - 完整的使用说明和 API 文档
+- [RAG 系统详细文档](demo/RAG/README.md) - 完整的使用说明和 API 文档
 - [Reranker 部署指南](docs/rag/DEPLOY_RERANKER.md) - 本地 Reranker 部署说明
 - [文档索引](docs/README.md) - 所有文档的索引
 - [魔搭模型下载指南](docs/魔搭模型下载指南.md) - ModelScope 模型下载使用指南
@@ -84,11 +113,11 @@ uv run python examples/rag/example_modelscope.py
 ## 💡 基本使用
 
 ```python
-from RAG.rag_system import IntelligentRAG
+from demo.RAG.rag_system import IntelligentRAG
 
 # 初始化 RAG 系统
 rag = IntelligentRAG(
-    documents_path="./RAG/documents",
+    documents_path="./demo/RAG/documents",
     embedding_model="qwen3-embedding:0.6b",
     llm_model="qwen3:0.6b",
     ollama_reranker_model="dengcao/Qwen3-Reranker-0.6B:Q8_0",
@@ -114,16 +143,19 @@ print(result["answer"])
 hylreg_LLM/
 ├── README.md                 # 项目主文档（本文件）
 ├── pyproject.toml            # 项目配置和依赖
-├── RAG/                      # RAG 系统核心代码
-│   ├── __init__.py
-│   ├── rag_system.py        # RAG 系统实现
-│   ├── documents/           # 文档目录
-│   ├── vectorstore/         # 向量存储目录
-│   └── README.md            # RAG 系统详细文档
-├── agents/                   # 智能体系统核心代码
-│   ├── __init__.py
-│   ├── agent_system.py      # 智能体系统实现
-│   └── README.md            # 智能体系统文档
+├── demo/                     # Demo 工作区子项目
+│   ├── vl_demo/             # 视觉语言 Demo
+│   ├── voice_assistant/     # 语音助手 Demo
+│   ├── agents/              # 智能体系统核心代码
+│   │   ├── __init__.py
+│   │   ├── agent_system.py
+│   │   └── README.md
+│   └── RAG/                  # RAG 系统核心代码
+│       ├── __init__.py
+│       ├── rag_system.py
+│       ├── documents/       # 文档目录
+│       ├── vectorstore/     # 向量存储目录
+│       └── README.md
 ├── examples/                 # 示例代码目录
 │   ├── rag/                 # RAG 系统示例
 │   │   ├── example.py       # 基础示例

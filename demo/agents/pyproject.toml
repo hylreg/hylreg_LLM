@@ -1,0 +1,26 @@
+[project]
+name = "llm-agents"
+version = "0.1.0"
+description = "智能体系统：LangChain Agent 封装"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "langchain>=0.2.0",
+    "langchain-community>=0.3.0",
+    "langchain-openai>=0.2.0",
+    "langchain-ollama>=0.2.0",
+    "langchain-core>=0.3.0",
+    "langchain-text-splitters>=0.3.0",
+    "faiss-cpu>=1.7.4",
+    "tiktoken>=0.5.0",
+    "python-dotenv>=1.0.0",
+    "FlagEmbedding>=1.2.0",
+    "torch>=2.0.0",
+    "requests>=2.31.0",
+    "modelscope>=1.9.0",
+    "transformers>=4.30.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

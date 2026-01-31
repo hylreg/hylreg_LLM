@@ -1,28 +1,22 @@
 """
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-使用 Ollama Reranker 的 RAG 系统示例
+使用 ModelScope 下载的 Qwen3-Reranker-0.6B 模型的 RAG 系统示例
 
-本示例展示如何使用 Ollama Reranker 进行重排序。
-这是推荐的重排序方式，设置简单，无需下载本地模型。
+本示例展示如何使用从 ModelScope 下载的本地 Qwen Reranker 模型进行重排序。
+模型路径：/home/lab/.cache/modelscope/hub/models/Qwen/Qwen3-Reranker-0.6B
 
 运行前准备：
-1. 安装 Ollama: https://ollama.ai
-2. 下载所有需要的模型:
+1. 安装 Ollama 并下载模型:
    - ollama pull qwen3:0.6b
    - ollama pull qwen3-embedding:0.6b
-   - ollama pull dengcao/Qwen3-Reranker-0.6B:Q8_0
-3. 确保 Ollama 服务正在运行
-
-优势：
-- 无需 API Key
-- 本地运行，延迟低
-- 设置简单，只需 pull 模型
+2. 确保 ModelScope 模型已下载到指定路径
 """
 
 import os
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
 from demo.RAG.rag_system import IntelligentRAG
 
 
@@ -36,26 +30,30 @@ def main():
     project_root = Path(__file__).parent.parent.parent
     documents_path = project_root / "demo" / "RAG" / "documents"
     
-    # 初始化 RAG 系统（使用 Ollama 模型 + Ollama Reranker）
-    # 注意：
-    # 1. 需要先使用 ollama pull 下载相应的模型
-    #    ollama pull qwen3:0.6b
-    #    ollama pull qwen3-embedding:0.6b
-    #    ollama pull dengcao/Qwen3-Reranker-0.6B:Q8_0
-    # 2. 确保 Ollama 服务正在运行
+    # ModelScope 下载的模型路径
+    modelscope_model_path = "/home/lab/.cache/modelscope/hub/models/Qwen/Qwen3-Reranker-0.6B"
     
+    # 检查模型路径是否存在
+    if not os.path.exists(modelscope_model_path):
+        print(f"错误：模型路径不存在: {modelscope_model_path}")
+        print("请先使用 ModelScope 下载模型")
+        return
+    
+    print(f"使用 ModelScope 模型路径: {modelscope_model_path}")
+    
+    # 初始化 RAG 系统（使用 Ollama 模型 + ModelScope 本地 Reranker）
     rag = IntelligentRAG(
         documents_path=str(documents_path),  # 文档目录路径
         embedding_model="qwen3-embedding:0.6b",  # Ollama 嵌入模型
         llm_model="qwen3:0.6b",  # Ollama LLM 模型
         chunk_size=1000,
         chunk_overlap=200,
-        ollama_reranker_model="dengcao/Qwen3-Reranker-0.6B:Q8_0",  # Ollama Reranker 模型
+        reranker_model_path=modelscope_model_path,  # ModelScope 下载的本地 Reranker 模型路径
     )
     
     # 构建 RAG 系统
     # k: 初始检索的文档块数量（重排序前会检索 k*2 个文档）
-    # use_rerank: 是否启用重排序（使用 Ollama Reranker）
+    # use_rerank: 是否启用重排序（使用本地 Reranker）
     # rerank_top_n: 重排序后保留的文档数量
     rag.build(k=4, use_rerank=True, rerank_top_n=3)
     

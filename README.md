@@ -49,11 +49,11 @@ uv run --package vl-demo vl-demo --image /path/to/image.jpg
 uv run --package voice-assistant voice-assistant
 ```
 
-各子项目详细说明见其目录下的 `README.md`。运行 **RAG / examples** 示例时，在根目录执行 `uv sync` 后使用：
+各子项目详细说明见其目录下的 `README.md`。运行 **RAG** 示例时，在根目录执行 `uv sync` 后使用：
 
 ```bash
-uv run python examples/rag/example_ollama.py
-uv run python examples/rag/benchmark.py
+uv run python demo/RAG/example_ollama.py
+uv run python demo/RAG/benchmark.py
 ```
 
 ### 2. 配置环境
@@ -93,14 +93,14 @@ export USE_MODELSCOPE="true"
 ```bash
 # 使用 Ollama（推荐）
 export USE_OLLAMA="true"
-uv run python examples/rag/example_ollama.py
+uv run python demo/RAG/example_ollama.py
 
 # 或使用其他 API
-uv run python examples/rag/example.py
+uv run python demo/RAG/example.py
 
 # 使用魔搭 ModelScope
 export USE_MODELSCOPE="true"
-uv run python examples/rag/example_modelscope.py
+uv run python demo/RAG/example_modelscope.py
 ```
 
 ## 📚 文档
@@ -146,24 +146,21 @@ hylreg_LLM/
 ├── demo/                     # Demo 工作区子项目
 │   ├── vl_demo/             # 视觉语言 Demo
 │   ├── voice_assistant/     # 语音助手 Demo
-│   ├── agents/              # 智能体系统核心代码
+│   ├── agents/              # 智能体系统
 │   │   ├── __init__.py
 │   │   ├── agent_system.py
+│   │   ├── example.py       # 智能体示例
 │   │   └── README.md
-│   └── RAG/                  # RAG 系统核心代码
+│   └── RAG/                  # RAG 系统
 │       ├── __init__.py
 │       ├── rag_system.py
+│       ├── example.py       # 基础示例
+│       ├── example_ollama.py
+│       ├── example_modelscope.py
+│       ├── benchmark.py
 │       ├── documents/       # 文档目录
 │       ├── vectorstore/     # 向量存储目录
 │       └── README.md
-├── examples/                 # 示例代码目录
-│   ├── rag/                 # RAG 系统示例
-│   │   ├── example.py       # 基础示例
-│   │   ├── example_ollama.py
-│   │   ├── example_modelscope.py
-│   │   └── ...
-│   └── agents/              # 智能体系统示例
-│       └── example.py
 ├── scripts/                  # 工具脚本目录
 │   ├── download_qwen_reranker.py  # 模型下载脚本
 │   └── main.py              # 主入口脚本

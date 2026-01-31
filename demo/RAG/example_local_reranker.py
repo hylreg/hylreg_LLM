@@ -1,21 +1,24 @@
 """
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-使用 ModelScope 下载的 Qwen3-Reranker-0.6B 模型的 RAG 系统示例
+使用本地 Qwen Reranker 的 RAG 系统示例
 
-本示例展示如何使用从 ModelScope 下载的本地 Qwen Reranker 模型进行重排序。
-模型路径：/home/lab/.cache/modelscope/hub/models/Qwen/Qwen3-Reranker-0.6B
+本示例展示如何使用本地下载的 Qwen Reranker 模型进行重排序。
+适合需要完全离线运行或不想依赖 Ollama Reranker 的场景。
 
 运行前准备：
 1. 安装 Ollama 并下载模型:
    - ollama pull qwen3:0.6b
    - ollama pull qwen3-embedding:0.6b
-2. 确保 ModelScope 模型已下载到指定路径
+2. 下载 Qwen Reranker 模型到本地:
+   - huggingface-cli download --resume-download Qwen/Qwen3-Reranker-0.6B --local-dir ./Qwen/Qwen3-Reranker-0.6B
+3. 确保模型路径正确（默认：项目根目录/Qwen/Qwen3-Reranker-0.6B）
 """
 
 import os
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
 from demo.RAG.rag_system import IntelligentRAG
 
 
@@ -29,25 +32,25 @@ def main():
     project_root = Path(__file__).parent.parent.parent
     documents_path = project_root / "demo" / "RAG" / "documents"
     
-    # ModelScope 下载的模型路径
-    modelscope_model_path = "/home/lab/.cache/modelscope/hub/models/Qwen/Qwen3-Reranker-0.6B"
+    # 初始化 RAG 系统（使用 Ollama 模型 + 本地 Reranker）
+    # 注意：
+    # 1. 需要先使用 ollama pull 下载相应的模型
+    #    ollama pull qwen3:0.6b
+    #    ollama pull qwen3-embedding:0.6b
+    # 2. 需要先下载 Qwen Reranker 模型到本地
+    #    huggingface-cli download --resume-download Qwen/Qwen3-Reranker-0.6B --local-dir ./Qwen/Qwen3-Reranker-0.6B
     
-    # 检查模型路径是否存在
-    if not os.path.exists(modelscope_model_path):
-        print(f"错误：模型路径不存在: {modelscope_model_path}")
-        print("请先使用 ModelScope 下载模型")
-        return
+    # 本地 Reranker 模型路径（相对于项目根目录）
+    # 如果模型在项目根目录下，使用绝对路径或相对于项目根目录的路径
+    reranker_model_path = project_root / "Qwen" / "Qwen3-Reranker-0.6B"
     
-    print(f"使用 ModelScope 模型路径: {modelscope_model_path}")
-    
-    # 初始化 RAG 系统（使用 Ollama 模型 + ModelScope 本地 Reranker）
     rag = IntelligentRAG(
         documents_path=str(documents_path),  # 文档目录路径
         embedding_model="qwen3-embedding:0.6b",  # Ollama 嵌入模型
         llm_model="qwen3:0.6b",  # Ollama LLM 模型
         chunk_size=1000,
         chunk_overlap=200,
-        reranker_model_path=modelscope_model_path,  # ModelScope 下载的本地 Reranker 模型路径
+        reranker_model_path=str(reranker_model_path) if reranker_model_path.exists() else None,  # 本地 Reranker 模型路径
     )
     
     # 构建 RAG 系统

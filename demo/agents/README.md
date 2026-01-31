@@ -65,7 +65,7 @@ cd /home/lab/Projects/hylreg_LLM
 
 # 使用 Ollama（推荐）
 export USE_OLLAMA="true"
-uv run python examples/agents/example.py
+uv run python demo/agents/example.py
 ```
 
 ## 使用方法
@@ -89,7 +89,7 @@ print(response)
 ## 文件说明
 
 - `agent_system.py`: 智能体系统核心实现
-- `examples/agents/example.py`: 使用示例
+- `example.py`: 使用示例
 - `tools/`: 工具目录（可选，如需要可自行创建）
 
 ## 常见问题

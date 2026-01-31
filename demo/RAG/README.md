@@ -89,14 +89,14 @@ cd /home/lab/Projects/hylreg_LLM
 
 # 使用 Ollama（推荐）
 export USE_OLLAMA="true"
-uv run python examples/rag/example_ollama.py
+uv run python demo/RAG/example_ollama.py
 
 # 或使用其他 API
-uv run python examples/rag/example.py
+uv run python demo/RAG/example.py
 
 # 使用魔搭 ModelScope
 export USE_MODELSCOPE="true"
-uv run python examples/rag/example_modelscope.py
+uv run python demo/RAG/example_modelscope.py
 ```
 
 ## 使用方法
@@ -193,14 +193,14 @@ print(result["answer"])
 ## 文件说明
 
 - `rag_system.py`: RAG 系统核心实现
-所有示例代码位于 `examples/rag/` 目录：
-- `example.py`: 使用示例（默认配置）
-- `example_ollama.py`: Ollama 专用示例
-- `example_modelscope.py`: 魔搭 ModelScope 示例
-- `example_local_reranker.py`: 本地 Reranker 示例
-- `example_ollama_reranker.py`: Ollama Reranker 示例
-- `example_modelscope_reranker.py`: ModelScope Reranker 示例
-- `benchmark.py`: 性能测试脚本
+- 本目录下的示例与脚本：
+  - `example.py`: 使用示例（默认配置）
+  - `example_ollama.py`: Ollama 专用示例
+  - `example_modelscope.py`: 魔搭 ModelScope 示例
+  - `example_local_reranker.py`: 本地 Reranker 示例
+  - `example_ollama_reranker.py`: Ollama Reranker 示例
+  - `example_modelscope_reranker.py`: ModelScope Reranker 示例
+  - `benchmark.py`: 性能测试脚本
 - `documents/`: 文档目录
 - `DEPLOY_RERANKER.md`: 本地 Reranker 部署指南
 
@@ -210,10 +210,10 @@ print(result["answer"])
 
 ```bash
 # 错误：uv run example.py
-# 正确：uv run python examples/rag/example.py
+# 正确：uv run python demo/RAG/example.py
 # 或：从项目根目录运行
 cd /home/lab/Projects/hylreg_LLM
-uv run python examples/rag/example.py
+uv run python demo/RAG/example.py
 ```
 
 ### 2. Ollama 连接失败

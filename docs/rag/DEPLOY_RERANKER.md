@@ -54,7 +54,7 @@ result = rag.query("你的问题")
 # 运行示例
 cd /home/lab/Projects/hylreg_LLM
 export USE_OLLAMA="true"
-uv run python examples/rag/example_local_reranker.py
+uv run python demo/RAG/example_local_reranker.py
 ```
 
 ## 模型路径说明

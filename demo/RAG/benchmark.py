@@ -1,7 +1,4 @@
 """
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 RAG 系统性能测试脚本
 
 本脚本用于测试和统计 RAG 系统的各项性能指标，包括：
@@ -14,20 +11,22 @@ RAG 系统性能测试脚本
 - 吞吐量测试
 
 使用方法：
-    # 使用 uv（推荐）
+    # 使用 uv（推荐），在项目根目录运行
+    uv run python demo/RAG/benchmark.py
+
+    # 或进入 demo/RAG 目录后
     uv run python benchmark.py
-    
-    # 或从项目根目录运行
-    uv run python examples/rag/benchmark.py
-    
-    # 使用传统 Python
-    python benchmark.py
 
 环境变量：
     USE_OLLAMA=true              # 使用 Ollama 后端
     OLLAMA_BASE_URL=http://localhost:11434
     SILICONFLOW_API_KEY=...      # 使用硅基流动 API
 """
+
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import os
 import time

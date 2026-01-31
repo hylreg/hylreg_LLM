@@ -20,11 +20,11 @@
 - [Ollama Reranker 部署指南](OLLAMA_RERANKER_DEPLOY.md) - Ollama Reranker 部署说明
 
 ### 示例代码
-- [RAG 示例代码](../examples/rag/) - RAG 系统各种使用示例
-  - [基础示例](../examples/rag/example.py) - 使用 API 服务的示例
-  - [Ollama 示例](../examples/rag/example_ollama.py) - 使用 Ollama 的示例代码
-  - [ModelScope 示例](../examples/rag/example_modelscope.py) - 使用魔搭 ModelScope 的示例
-- [智能体示例代码](../examples/agents/) - 智能体系统使用示例
+- [RAG 示例代码](../demo/RAG/) - RAG 系统各种使用示例（位于 demo/RAG/）
+  - [基础示例](../demo/RAG/example.py) - 使用 API 服务的示例
+  - [Ollama 示例](../demo/RAG/example_ollama.py) - 使用 Ollama 的示例代码
+  - [ModelScope 示例](../demo/RAG/example_modelscope.py) - 使用魔搭 ModelScope 的示例
+- [智能体示例代码](../demo/agents/) - 智能体系统使用示例（demo/agents/example.py）
 
 ## 📖 文档结构
 
@@ -39,11 +39,14 @@ hylreg_LLM/
 │   │   └── VECTOR_STORE.md
 │   ├── 魔搭模型下载指南.md
 │   └── ...
-├── demo/RAG/                    # RAG 系统核心代码
-│   └── README.md               # RAG 系统详细文档
-└── examples/                    # 示例代码目录
-    ├── rag/                    # RAG 示例
-    └── agents/                 # 智能体示例
+└── demo/                        # Demo 子项目（含示例）
+    ├── RAG/                     # RAG 系统及示例
+    │   ├── example*.py
+    │   ├── benchmark.py
+    │   └── README.md
+    └── agents/                  # 智能体系统及示例
+        ├── example.py
+        └── README.md
 ```
 
 ## 🔍 快速查找
@@ -53,7 +56,7 @@ hylreg_LLM/
 - **想要快速开始？** → 查看 [项目主 README](../README.md)
 - **需要了解 RAG 系统？** → 查看 [RAG 系统文档](../demo/RAG/README.md)
 - **需要部署本地 Reranker？** → 查看 [Reranker 部署指南](rag/DEPLOY_RERANKER.md)
-- **需要代码示例？** → 查看 [examples 目录](../examples/)
+- **需要代码示例？** → 查看 [demo/RAG](../demo/RAG/) 与 [demo/agents](../demo/agents/)
 - **需要下载模型？** → 查看 [魔搭模型下载指南](魔搭模型下载指南.md)
 
 ## 📝 添加新文档

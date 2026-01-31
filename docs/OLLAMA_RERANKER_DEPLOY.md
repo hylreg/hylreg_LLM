@@ -34,7 +34,7 @@ rag.build(k=4, use_rerank=True, rerank_top_n=3)
 
 ```bash
 cd /home/lab/Projects/hylreg_LLM
-uv run python examples/rag/example_modelscope_reranker.py
+uv run python demo/RAG/example_modelscope_reranker.py
 ```
 
 ### 方案 2：使用 Ollama 社区模型（推荐，最简单）

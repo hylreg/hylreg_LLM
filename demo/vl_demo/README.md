@@ -35,9 +35,10 @@ vl_demo/
 ├── README.md              # 本说明
 ├── 视觉语言Demo方案.md     # 技术方案
 ├── run_vl_demo.py         # 入口脚本
-└── vl_demo/
+├── __init__.py            # 包入口，导出 VLClient
+└── vl/                    # VL 客户端子包
     ├── __init__.py
-    └── vl_client.py       # VL 客户端
+    └── client.py          # VL 客户端（Ollama / SiliconFlow）
 ```
 
 ## 技术方案

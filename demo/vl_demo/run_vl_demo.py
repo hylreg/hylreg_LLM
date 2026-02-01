@@ -2,18 +2,20 @@
 """
 视觉语言 (VL) Demo 入口脚本
 用法: uv run python demo/vl_demo/run_vl_demo.py --image <图片路径> [--question "问题"]
+从项目根目录运行: uv run python demo/vl_demo/run_vl_demo.py
 """
 
 import argparse
 import sys
 from pathlib import Path
 
-# 保证可导入项目根与 vl_demo 包
-_root = Path(__file__).resolve().parent
-if str(_root) not in sys.path:
-    sys.path.insert(0, str(_root))
+_file = Path(__file__).resolve()
+_demo_dir = _file.parents[1]  # demo/，使 vl_demo 解析为 demo/vl_demo
 
-from vl_demo.vl_client import VLClient
+if str(_demo_dir) not in sys.path:
+    sys.path.insert(0, str(_demo_dir))
+
+from vl_demo.vl import VLClient
 
 
 def main() -> None:

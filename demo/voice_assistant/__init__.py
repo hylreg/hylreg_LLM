@@ -3,7 +3,7 @@
 ASR → LLM → TTS 串联
 """
 
-from .llm_client import LLMClient
-from .pipeline import VoiceAssistantPipeline
+from .core import VoiceAssistantPipeline
+from .llm import LLMClient
 
 __all__ = ["LLMClient", "VoiceAssistantPipeline"]

@@ -9,14 +9,12 @@ import sys
 from pathlib import Path
 
 _file = Path(__file__).resolve()
-_project_dir = _file.parent          # demo/voice_assistant
-_project_root = _file.parents[2]    # 项目根 hylreg_LLM
+_demo_dir = _file.parents[1]  # demo/，使 voice_assistant 解析为 demo/voice_assistant
 
-for p in (_project_root, _project_dir):
-    if str(p) not in sys.path:
-        sys.path.insert(0, str(p))
+if str(_demo_dir) not in sys.path:
+    sys.path.insert(0, str(_demo_dir))
 
-from voice_assistant.pipeline import VoiceAssistantPipeline
+from voice_assistant.core import VoiceAssistantPipeline
 
 
 def main():

@@ -11,7 +11,7 @@ try:
 except ImportError:
     import sys
     from pathlib import Path
-    # 本文件在 demo/voice_assistant/voice_assistant/ 下，项目根为 parents[3]
+    # 本文件在 demo/voice_assistant/llm/ 下，项目根为 parents[3]
     root = Path(__file__).resolve().parents[3]
     if str(root) not in sys.path:
         sys.path.insert(0, str(root))

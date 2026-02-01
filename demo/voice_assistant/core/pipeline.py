@@ -6,7 +6,7 @@
 
 from typing import Optional, Callable
 
-from .llm_client import LLMClient
+from voice_assistant.llm import LLMClient
 
 
 class VoiceAssistantPipeline:

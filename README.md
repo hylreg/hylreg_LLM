@@ -145,7 +145,7 @@ hylreg_LLM/
 ├── pyproject.toml            # 项目配置和依赖
 ├── demo/                     # Demo 工作区子项目
 │   ├── vl_demo/             # 视觉语言 Demo
-│   ├── voice_assistant/     # 语音助手 Demo
+│   ├── voice_assistant/     # 语音助手（llm / audio / core）
 │   ├── agents/              # 智能体系统
 │   │   ├── __init__.py
 │   │   ├── agent_system.py

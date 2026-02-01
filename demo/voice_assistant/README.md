@@ -7,16 +7,21 @@
 ## 目录结构
 
 ```
-voice_assistant/           # 本子项目目录
+voice_assistant/              # 本子项目目录，包内按功能分子目录
 ├── README.md
 ├── 语音助手方案.md
-├── run_voice_assistant.py   # 入口
-└── voice_assistant/         # Python 实现包
+├── run_voice_assistant.py    # 入口
+├── __init__.py
+├── llm/                      # LLM 客户端
+│   ├── __init__.py
+│   └── client.py
+├── audio/                    # 语音输入输出（ASR / TTS）
+│   ├── __init__.py
+│   ├── asr.py
+│   └── tts.py
+└── core/                     # 流水线：ASR → LLM → TTS
     ├── __init__.py
-    ├── llm_client.py
-    ├── pipeline.py
-    ├── asr.py
-    └── tts.py
+    └── pipeline.py
 ```
 
 ## 运行方式（文本模式）
@@ -45,4 +50,4 @@ uv run voice-assistant
 
 ## 后续
 
-- 阶段二：在 `voice_assistant/asr.py`、`tts.py` 中接入 ModelScope FunASR / TTS，实现完整语音闭环。
+- 阶段二：在 `audio/asr.py`、`audio/tts.py` 中接入 ModelScope FunASR / TTS，实现完整语音闭环。
